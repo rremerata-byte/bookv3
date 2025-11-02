@@ -72,6 +72,12 @@ Route::middleware(['auth', 'role:admin,user'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/basic', [ProfileController::class, 'updateBasicProfile'])->name('profile.update.basic');
+    // QR code endpoint for both admin and user
+    Route::get('/books/{id}/qrcode', [BookController::class, 'getQrCode'])->name('books.qrcode');
+    // Notification actions for users
+    Route::post('/notifications/{notification}/toggle-read', [\App\Http\Controllers\NotificationController::class, 'toggleRead'])->name('notifications.toggle-read');
+    Route::post('/notifications/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notifications.mark-all-read');
+    Route::delete('/notifications/{notification}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
 

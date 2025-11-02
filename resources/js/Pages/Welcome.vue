@@ -4,7 +4,7 @@
         <a class="logo" href="#">
           <img src="/img/loho.png" alt="Logo" class="logo-img">
         </a>
-        <span id="hamburger-btn" class="material-symbols-outlined">menu</span>
+        
       </nav>
     </header>
   

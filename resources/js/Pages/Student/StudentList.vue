@@ -1,6 +1,6 @@
 <template>
   <Layout>
-    <div class="ml-64 p-8 flex-1 bg-cover bg-center" style="background-image: url('/img/background.jpg')">
+  <div class="ml-64 p-8 flex-1 bg-cover bg-center bg-fixed min-h-screen" style="background-image: url('/img/background.jpg')">
       <div class="bg-white rounded-lg shadow-md p-6">
         <div class="flex justify-between items-center mb-6">
           <button @click="openCreateModal" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
@@ -9,51 +9,71 @@
         </div>
 
         <div class="overflow-x-auto">
-          <table class="min-w-full">
-            <thead class="bg-gray-50">
-              <tr>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Full Name
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Email
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Student ID
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Course & Section
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Gender
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Phone Number
-                </th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-              <tr v-for="student in students" :key="student.id" class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap">{{ student.fullname }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ student.email }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ student.studentid }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ student.courseSection }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ student.gender }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">{{ student.phone_number || 'N/A' }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <button @click="editStudent(student)" class="text-blue-600 hover:text-blue-800 mr-2">
-                    Edit
-                  </button>
-                  <button @click="confirmDelete(student)" class="text-red-600 hover:text-red-800">
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div class="shadow-sm rounded-lg overflow-hidden bg-white">
+            <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-white to-gray-50">
+              <div class="flex items-center space-x-3">
+                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7 7 0 1116.65 16.65z" />
+                </svg>
+                <input v-model="query" type="text" placeholder="Search students by name, email or ID..." class="w-64 px-3 py-2 rounded-md border text-sm focus:ring-0 focus:border-indigo-300" />
+                <div class="text-sm text-gray-500">Showing <span class="font-semibold text-gray-700">{{ filteredStudents.length }}</span></div>
+              </div>
+              <div class="text-sm text-gray-500">Total: <span class="font-medium text-gray-700">{{ students.length }}</span></div>
+            </div>
+
+            <table class="min-w-full divide-y divide-gray-200 bg-white">
+              <thead class="bg-gray-100">
+                <tr>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course & Section</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
+                  <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white divide-y divide-gray-200">
+                <tr v-for="student in filteredStudents" :key="student.id" class="hover:bg-gray-50 transition-colors">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="h-10 w-10 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-semibold mr-3">
+                        {{ initials(student.fullname) }}
+                      </div>
+                      <div>
+                        <div class="text-sm font-medium text-gray-900">{{ student.fullname }}</div>
+                        <div class="text-xs text-gray-500">ID: {{ student.studentid }}</div>
+                      </div>
+                    </div>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-sm text-gray-900">{{ student.email }}</div>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ student.studentid }}</td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ student.courseSection }}</td>
+
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                      :class="student.gender === 'Male' ? 'bg-blue-100 text-blue-800' : student.gender === 'Female' ? 'bg-pink-100 text-pink-800' : 'bg-gray-100 text-gray-800'"
+                    >
+                      {{ student.gender || 'N/A' }}
+                    </span>
+                  </td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ student.phone_number || 'N/A' }}</td>
+
+                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <button @click="editStudent(student)" class="text-indigo-600 hover:text-indigo-900 mr-3">Edit</button>
+                    <button @click="confirmDelete(student)" class="text-red-600 hover:text-red-800">Delete</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>
@@ -133,12 +153,12 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 import Layout from '@/Layouts/FrontEndLayout.vue';
 import Modal from '@/Components/Modal.vue';
 import { useForm } from '@inertiajs/vue3';
 
-const props = defineProps({
+const { students } = defineProps({
   students: {
     type: Array,
     required: true
@@ -163,6 +183,29 @@ const form = useForm({
   new_password_confirmation: '',
   phone_number: '',
 });
+
+// UI helpers
+const query = ref('');
+const filteredStudents = computed(() => {
+  const q = (query.value || '').trim().toLowerCase();
+  if (!q) return students;
+  return students.filter((s) => {
+    const fullname = (s.fullname || '').toString().toLowerCase();
+    const email = (s.email || '').toString().toLowerCase();
+    const studentid = (s.studentid || '').toString().toLowerCase();
+    return fullname.includes(q) || email.includes(q) || studentid.includes(q);
+  });
+});
+
+const initials = (name) => {
+  if (!name) return '';
+  return name
+    .split(' ')
+    .filter(Boolean)
+    .map((n) => n[0].toUpperCase())
+    .slice(0, 2)
+    .join('');
+};
 
 const openCreateModal = () => {
   isEditing.value = false;

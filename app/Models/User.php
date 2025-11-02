@@ -38,4 +38,16 @@ class User extends Authenticatable
             ->withTimestamps()
             ->withPivot('borrow_date', 'return_date', 'status');
     }
+
+    // Relationship with book requests (borrow/reserve)
+    public function bookRequests()
+    {
+        return $this->hasMany(BookRequest::class, 'user_id');
+    }
+
+    // Relationship with notifications
+    public function notificationsList()
+    {
+        return $this->hasMany(Notification::class, 'user_id')->orderByDesc('created_at');
+    }
 }

@@ -34,6 +34,24 @@ class BookRequestController extends Controller
             'return_date' => $validated['return_date'],
             'status' => 'pending',
         ]);
+
+        // create notification for the user
+        try {
+            \App\Models\Notification::create([
+                'user_id' => Auth::id(),
+                'type' => 'request_submitted',
+                'message' => null,
+                'payload' => [
+                    'book_title' => optional($bookRequest->book)->title,
+                    'request_type' => $bookRequest->request_type,
+                    'request_date' => $bookRequest->request_date,
+                    'request_id' => $bookRequest->id,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            // don't block on notification errors
+            \Illuminate\Support\Facades\Log::error('Notification create failed: ' . $e->getMessage());
+        }
     
         return redirect()->back()->with('success', 'Request submitted successfully');
     }
@@ -67,13 +85,48 @@ class BookRequestController extends Controller
                 $request->book->update(['availability' => 'Reserved']);
             }
         });
+
+        // notify the request owner
+        try {
+            \App\Models\Notification::create([
+                'user_id' => $request->user_id,
+                'type' => 'request_approved',
+                'message' => null,
+                'payload' => [
+                    'book_title' => optional($request->book)->title,
+                    'request_type' => $request->request_type,
+                    'start_date' => $request->request_date,
+                    'due_date' => $request->return_date,
+                    'request_id' => $request->id,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Notification create failed: ' . $e->getMessage());
+        }
     }
 
     public function reject($id)
     {
         $request = BookRequest::findOrFail($id);
         $request->update(['status' => 'rejected']);
-        
+        // notify the request owner
+        try {
+            \App\Models\Notification::create([
+                'user_id' => $request->user_id,
+                'type' => 'request_rejected',
+                'message' => null,
+                'payload' => [
+                    'book_title' => optional($request->book)->title,
+                    'request_type' => $request->request_type,
+                    'request_date' => $request->request_date,
+                    'reason' => null,
+                    'request_id' => $request->id,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Notification create failed: ' . $e->getMessage());
+        }
+
         return redirect()->back();
     }
 

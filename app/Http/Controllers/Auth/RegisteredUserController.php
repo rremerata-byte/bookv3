@@ -24,7 +24,7 @@ class RegisteredUserController extends Controller
         try {
             $request->validate([
                 'fullname' => 'required|string|max:255',
-                'email' => 'required|string|email|max:255|unique:users',  // Fixed validation rule
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:users', 'regex:/^[a-zA-Z0-9._%+-]+@ssct\.edu\.ph$/i'],  // Only allow @ssct.edu.ph
                 'studentid' => 'required|string|unique:users',
                 'courseSection' => 'required|string|max:255',
                 'gender' => 'required|in:Male,Female,Other',

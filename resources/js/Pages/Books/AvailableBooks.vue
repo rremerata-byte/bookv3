@@ -41,6 +41,7 @@
               <th class="px-4 py-2 text-left">Course</th>
               <th class="px-4 py-2 text-left">Book ID</th>
               <th class="px-4 py-2 text-left">Availability</th>
+              <th class="px-4 py-2 text-center">QR Code</th>
               <th class="px-4 py-2 text-center">Actions</th>
             </tr>
           </thead>
@@ -83,6 +84,16 @@
                     Until: {{ formatDate(book.current_reserver.until_date) }}
                   </span>
                 </div>
+              </td>
+              <!-- QR Code Button -->
+              <td class="px-4 py-2 text-center">
+                <button
+                  @click="viewQrCode(book.id, book.title)"
+                  class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
+                  title="View QR Code"
+                >
+                  <i class="fas fa-qrcode"></i>
+                </button>
               </td>
               <!-- Actions -->
               <td class="px-4 py-2 flex justify-center space-x-2">
@@ -326,6 +337,39 @@
           </div>
         </div>
 
+        <!-- QR Code Modal -->
+        <div v-if="showQrModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50" @click.self="closeQrModal">
+          <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h3 class="text-xl font-semibold text-gray-700 mb-4">QR Code - {{ qrModalBookTitle }}</h3>
+            
+            <!-- QR Code Display -->
+            <div v-if="qrCodeSvg && qrCodeSvg.length > 0" v-html="qrCodeSvg" class="flex justify-center mb-4"></div>
+            <div v-else class="flex justify-center items-center h-48">
+              <div class="text-center">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mb-2"></div>
+                <p class="text-gray-500">Loading QR code...</p>
+              </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex justify-between mt-6 space-x-4">
+              <button
+                @click="downloadQrCode"
+                :disabled="!qrCodeSvg"
+                class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 transition w-full disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Download
+              </button>
+              <button
+                @click="closeQrModal"
+                class="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition w-full"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+
       </main>
     </div>
   </Layout>
@@ -352,6 +396,10 @@ export default {
       activeTab: 'books',
       searchQuery: '',
       showModal: false,
+      showQrModal: false,
+      qrCodeSvg: null,
+      qrModalBookTitle: '',
+      qrModalBookId: null,
       editBookData: {
         id: null,
         title: '',
@@ -408,10 +456,17 @@ export default {
     },
     getTabCount(tab) {
       switch(tab) {
-        case 'books': return this.books.length
-        case 'borrowed': return this.books.filter(b => b.availability === 'Borrowed').length
-        case 'reserved': return this.books.filter(b => b.availability === 'Reserved').length
-        case 'requests': return this.bookRequests.length
+        case 'books': 
+          return Array.isArray(this.books) ? this.books.length : 0;
+        case 'borrowed': 
+          return Array.isArray(this.books) ? this.books.filter(b => b.availability === 'Borrowed').length : 0;
+        case 'reserved': 
+          return Array.isArray(this.books) ? this.books.filter(b => b.availability === 'Reserved').length : 0;
+        case 'requests': 
+          // Return only pending requests count (do not include history)
+          return Array.isArray(this.pendingRequests) ? this.pendingRequests.length : 0;
+        default:
+          return 0;
       }
     },
     async approveRequest(requestId) {
@@ -517,6 +572,144 @@ export default {
     submitRequest() {
       this.$inertia.post(route('book-requests.store'), this.requestForm);
       this.closeRequestModal();
+    },
+    
+    async viewQrCode(bookId, title) {
+      this.qrModalBookId = bookId;
+      this.qrModalBookTitle = title;
+      this.showQrModal = true;
+      this.qrCodeSvg = null; // Reset while loading
+
+      try {
+        console.log('Fetching QR code for book ID:', bookId);
+        
+        const response = await fetch(`/books/${bookId}/qrcode`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+          }
+        });
+
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers.get('content-type'));
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Server error response:', errorText);
+          throw new Error(`Server returned ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('Response data keys:', Object.keys(data));
+        
+        // Check for error in response
+        if (data.error) {
+          console.error('QR code error:', data.error);
+          alert('Error: ' + data.error);
+          this.closeQrModal();
+          return;
+        }
+        
+        // Verify we have valid SVG data
+        if (!data.qrCodeSvg || typeof data.qrCodeSvg !== 'string' || data.qrCodeSvg.length === 0) {
+          console.error('Invalid or empty QR code data:', data);
+          alert('No QR code data received from server');
+          this.closeQrModal();
+          return;
+        }
+        
+        console.log('QR SVG length:', data.qrCodeSvg.length);
+        console.log('QR SVG starts with:', data.qrCodeSvg.substring(0, 50));
+        
+        // Verify SVG content
+        const svgContent = data.qrCodeSvg.trim();
+        if (!svgContent.startsWith('<?xml') && !svgContent.startsWith('<svg')) {
+          console.error('Invalid SVG format. Content starts with:', svgContent.substring(0, 100));
+          alert('Invalid SVG format received');
+          this.closeQrModal();
+          return;
+        }
+        
+        this.qrCodeSvg = data.qrCodeSvg;
+        console.log('✅ QR code loaded successfully for:', data.bookTitle || title);
+      } catch (error) {
+        console.error('Error fetching QR code:', error);
+        alert('Failed to load QR code: ' + error.message);
+        this.closeQrModal();
+      }
+    },
+
+    closeQrModal() {
+      this.showQrModal = false;
+      this.qrCodeSvg = null;
+      this.qrModalBookTitle = '';
+      this.qrModalBookId = null;
+    },
+
+    downloadQrCode() {
+      if (!this.qrCodeSvg) return;
+
+      try {
+        // Create a temporary container for the SVG
+        const container = document.createElement('div');
+        container.innerHTML = this.qrCodeSvg;
+        const svgElement = container.querySelector('svg');
+        
+        if (!svgElement) {
+          alert('Invalid QR code format');
+          return;
+        }
+
+        // Get SVG dimensions
+        const svgWidth = svgElement.width.baseVal.value || 200;
+        const svgHeight = svgElement.height.baseVal.value || 200;
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = svgWidth;
+        canvas.height = svgHeight;
+        const ctx = canvas.getContext('2d');
+
+        // Create image from SVG
+        const svgBlob = new Blob([this.qrCodeSvg], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        const img = new Image();
+
+        img.onload = () => {
+          // Draw white background
+          ctx.fillStyle = 'white';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          // Draw SVG on canvas
+          ctx.drawImage(img, 0, 0);
+
+          // Convert canvas to PNG and download
+          canvas.toBlob((blob) => {
+            const downloadUrl = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            const safeTitle = this.qrModalBookTitle.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+            link.href = downloadUrl;
+            link.download = `${safeTitle}_qr_code.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(downloadUrl);
+            URL.revokeObjectURL(url);
+          }, 'image/png');
+        };
+
+        img.onerror = () => {
+          alert('Failed to convert QR code to image');
+          URL.revokeObjectURL(url);
+        };
+
+        img.src = url;
+      } catch (error) {
+        console.error('Error downloading QR code:', error);
+        alert('Failed to download QR code');
+      }
     }
   }
 };

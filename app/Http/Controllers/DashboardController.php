@@ -16,6 +16,21 @@ use Illuminate\Http\Request;
 
 class DashboardController extends Controller
 {
+    // Shared logic for top 5 most request users (borrow/reserve)
+    private function getTopRequestUsers($limit = 5)
+    {
+        return \App\Models\User::select('id', 'fullname')
+            ->withCount(['bookRequests as total_requests' => function($query) {
+                $query->whereIn('request_type', ['borrow', 'reserve']);
+            }])
+            ->orderByDesc('total_requests')
+            ->limit($limit)
+            ->get()
+            ->map(fn($user) => [
+                'fullname' => $user->fullname,
+                'total_requests' => $user->total_requests
+            ]);
+    }
     public function index()
     {
         $stats = [
@@ -23,16 +38,74 @@ class DashboardController extends Controller
             'totalBorrowings' => Borrowing::whereNull('returned_at')->count(),
             'totalReturns' => BookAction::where('type', 'return')->count(),
             'totalLoginsToday' => LoginHistory::whereDate('created_at', today())->count(),
-            'activeBorrowings' => Borrowing::whereNull('returned_at')->count(),
-            'activeReservations' => Reservation::where('status', 'approved')->count(),
+            // Active borrowings should include current borrowings (not returned)
+            // and active approved reservations (until their return_date)
+            // Count distinct books that are currently borrowed (not returned)
+            'activeBorrowings' => Borrowing::whereNull('returned_at')->distinct()->count('book_id'),
+            // Count distinct books that are currently reserved and approved with return_date today or later
+            'activeReservations' => Reservation::where('status', 'approved')->whereDate('return_date', '>=', today())->distinct()->count('book_id'),
             'pendingRequests' => BookRequest::where('status', 'pending')->count(),
         ];
+
 
         $loginsData = LoginHistory::selectRaw('DATE_FORMAT(created_at, "%Y-%m") as month, COUNT(*) as count')
             ->groupBy('month')
             ->orderBy('month')
             ->pluck('count', 'month')
             ->toArray();
+
+        // Prepare monthly borrow and reservation counts for the current year (Jan-Dec)
+        $year = now()->year;
+
+        $borrowCountsRaw = Borrowing::selectRaw('MONTH(borrowed_date) as month, COUNT(*) as count')
+            ->whereYear('borrowed_date', $year)
+            ->groupBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+
+        $reserveCountsRaw = Reservation::selectRaw('MONTH(reservation_date) as month, COUNT(*) as count')
+            ->whereYear('reservation_date', $year)
+            ->groupBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+
+        // Fill arrays for 12 months (1..12)
+        $borrowMonthly = [];
+        $reserveMonthly = [];
+        for ($m = 1; $m <= 12; $m++) {
+            $borrowMonthly[] = isset($borrowCountsRaw[$m]) ? (int)$borrowCountsRaw[$m] : 0;
+            $reserveMonthly[] = isset($reserveCountsRaw[$m]) ? (int)$reserveCountsRaw[$m] : 0;
+        }
+
+        $monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+        // Yearly aggregation for the last 5 years (including current year)
+        $currentYear = now()->year;
+        $startYear = $currentYear - 4;
+
+        $startDate = \Carbon\Carbon::create($startYear, 1, 1)->startOfDay();
+        $endDate = \Carbon\Carbon::create($currentYear, 12, 31)->endOfDay();
+
+        $borrowYearRaw = Borrowing::selectRaw('YEAR(borrowed_date) as year, COUNT(*) as count')
+            ->whereBetween('borrowed_date', [$startDate, $endDate])
+            ->groupBy('year')
+            ->pluck('count', 'year')
+            ->toArray();
+
+        $reserveYearRaw = Reservation::selectRaw('YEAR(reservation_date) as year, COUNT(*) as count')
+            ->whereBetween('reservation_date', [$startDate, $endDate])
+            ->groupBy('year')
+            ->pluck('count', 'year')
+            ->toArray();
+
+        $yearLabels = [];
+        $borrowYearly = [];
+        $reserveYearly = [];
+        for ($y = $startYear; $y <= $currentYear; $y++) {
+            $yearLabels[] = (string)$y;
+            $borrowYearly[] = isset($borrowYearRaw[$y]) ? (int)$borrowYearRaw[$y] : 0;
+            $reserveYearly[] = isset($reserveYearRaw[$y]) ? (int)$reserveYearRaw[$y] : 0;
+        }
 
         $topBooks = Book::withCount(['borrowings'])
             ->orderByDesc('borrowings_count')
@@ -43,7 +116,10 @@ class DashboardController extends Controller
                 'count' => $book->borrowings_count
             ]);
 
-            $recentActions = BookAction::with(['book', 'user'])
+        // Top 5 users with most borrow/reserve actions (shared with AvailableBooks)
+        $topRequestUsers = $this->getTopRequestUsers(5);
+
+        $recentActions = BookAction::with(['book', 'user'])
             ->latest('action_date')
             ->limit(10)
             ->get()
@@ -62,7 +138,14 @@ class DashboardController extends Controller
         return Inertia::render('Dashboard', [
             'stats' => $stats,
             'loginsData' => $loginsData,
+            'borrowMonthly' => $borrowMonthly,
+            'reserveMonthly' => $reserveMonthly,
+            'monthLabels' => $monthLabels,
+            'borrowYearly' => $borrowYearly,
+            'reserveYearly' => $reserveYearly,
+            'yearLabels' => $yearLabels,
             'topBooks' => $topBooks,
+            'topRequestUsers' => $topRequestUsers,
             'bookActions' => $recentActions,
         ]);
     }

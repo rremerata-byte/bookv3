@@ -1,0 +1,1 @@
+import{_ as e}from"./_plugin-vue_export-helper-DlAUqK2U.js";import{f as o,o as t}from"./app-BP0YNKCv.js";const s={name:"RequestBook"};function r(a,c,n,_,p,f){return t(),o("div")}const i=e(s,[["render",r],["__scopeId","data-v-9938f105"]]);export{i as default};
