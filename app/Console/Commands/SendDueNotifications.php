@@ -5,7 +5,6 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Models\Borrowing;
 use App\Models\Notification;
-use App\Services\SmsService;
 use Carbon\Carbon;
 
 class SendDueNotifications extends Command
@@ -13,12 +12,9 @@ class SendDueNotifications extends Command
     protected $signature = 'notifications:send-due';
     protected $description = 'Create due reminders and overdue notifications for borrowings.';
 
-    protected $smsService;
-
-    public function __construct(SmsService $smsService)
+    public function __construct()
     {
         parent::__construct();
-        $this->smsService = $smsService;
     }
 
     public function handle()
@@ -54,16 +50,6 @@ class SendDueNotifications extends Command
                         'days_left' => 2,
                     ],
                 ]);
-
-                // Send SMS
-                if ($b->user && $b->user->phone_number) {
-                    $this->smsService->sendDueReminder(
-                        $b->user->phone_number,
-                        optional($b->book)->title,
-                        Carbon::parse($b->return_date)->format('M d, Y'),
-                        2
-                    );
-                }
             }
 
             // 1 day before due date
@@ -79,16 +65,6 @@ class SendDueNotifications extends Command
                         'days_left' => 1,
                     ],
                 ]);
-
-                // Send SMS
-                if ($b->user && $b->user->phone_number) {
-                    $this->smsService->sendDueReminder(
-                        $b->user->phone_number,
-                        optional($b->book)->title,
-                        Carbon::parse($b->return_date)->format('M d, Y'),
-                        1
-                    );
-                }
             }
 
             // On the due date
@@ -104,16 +80,6 @@ class SendDueNotifications extends Command
                         'days_left' => 0,
                     ],
                 ]);
-
-                // Send SMS
-                if ($b->user && $b->user->phone_number) {
-                    $this->smsService->sendDueReminder(
-                        $b->user->phone_number,
-                        optional($b->book)->title,
-                        Carbon::parse($b->return_date)->format('M d, Y'),
-                        0
-                    );
-                }
             }
 
             // Overdue
@@ -130,15 +96,6 @@ class SendDueNotifications extends Command
                         'days_overdue' => abs($daysLeft),
                     ],
                 ]);
-
-                // Send SMS for overdue (only send once when first becomes overdue)
-                if ($b->user && $b->user->phone_number && abs($daysLeft) === 1) {
-                    $this->smsService->sendOverdueNotification(
-                        $b->user->phone_number,
-                        optional($b->book)->title,
-                        abs($daysLeft)
-                    );
-                }
             }
         }
 

@@ -1,15 +1,15 @@
 <template>
 
   <!-- Header Section -->
-  <header class="bg-[#081c2d] text-white py-2 sm:py-3 px-2 sm:px-4 md:px-6 shadow-sm mb-3 sm:mb-4 flex flex-col md:flex-row items-center justify-between">
+  <header class="bg-[#081c2d] text-white py-3 px-4 md:px-6 shadow-sm mb-4 flex flex-col md:flex-row items-center justify-between">
       <!-- Logo Section -->
 
-      <div class="flex items-center space-x-2 sm:space-x-4 justify-center md:justify-start w-full md:w-auto">
-        <img src="/img/logo2.png" alt="BOOK CLOUD Logo" class="max-w-[100px] sm:max-w-[150px] h-auto" />
+      <div class="flex items-center space-x-4 justify-center md:justify-start w-full md:w-auto">
+        <img src="/img/logo2.png" alt="BOOK CLOUD Logo" class="max-w-[150px] h-auto" />
       </div>
 
       <!-- Search Bar Section (Centered) -->
-      <div class="w-full md:flex-1 md:mx-6 mt-2 sm:mt-3 md:mt-0">
+      <div class="w-full md:flex-1 md:mx-6 mt-3 md:mt-0">
         <input 
           id="search"
           name="search"
@@ -17,42 +17,46 @@
           v-model="searchQuery" 
           placeholder="Search by title, author, or course..."
           autocomplete="off"
-          class="w-full p-2 text-xs sm:text-sm border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
+          class="w-full p-2 text-sm border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
         />
       </div>
 
       <!-- Profile Section -->
-      <div class="flex items-center space-x-2 sm:space-x-4 w-full md:w-auto justify-end mt-2 sm:mt-3 md:mt-0">
+      <div class="flex items-center space-x-4 w-full md:w-auto justify-end mt-3 md:mt-0">
         <!-- Profile Button -->
         <button 
           ref="profileBtn"
           @click="toggleDropdown" 
           :aria-expanded="showDropdown"
-          class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#00509e] flex items-center justify-center text-white text-xs sm:text-sm font-semibold shadow-md transition-all hover:scale-105 relative"
+          class="w-10 h-10 rounded-full bg-[#00509e] flex items-center justify-center text-white text-sm font-semibold shadow-md transition-all hover:scale-105 relative"
         >
           <span class="sr-only">Open profile menu</span>
-          <span class="flex items-center space-x-0.5 sm:space-x-1">
+          <span class="flex items-center space-x-1">
             <span>{{ userInitial }}</span>
-            <svg :class="{'transform rotate-180': showDropdown}" class="w-2 h-2 sm:w-3 sm:h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            <svg :class="{'transform rotate-180': showDropdown}" class="w-3 h-3 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </span>
         </button>
 
-        <!-- User Info: show only name on very small screens; ID/phone move to dropdown -->
-        <div class="hidden sm:flex flex-col items-center sm:items-end space-y-0.5 text-center sm:text-right">
-          <p class="text-xs sm:text-sm font-semibold truncate max-w-[120px] sm:max-w-[180px]">{{ user.fullname }}</p>
-          <div class="hidden md:block">
-            <p class="text-xs text-gray-400 truncate max-w-[120px] sm:max-w-[180px]">{{ user.studentid }}</p>
-            <p class="text-xs text-gray-400 truncate max-w-[120px] sm:max-w-[180px]">{{ user.phone_number || 'No phone number' }}</p>
+        <!-- User Info: show only name on very small screens; ID/phone/course move to dropdown -->
+        <div class="flex flex-col items-center sm:items-end space-y-0.5 text-center sm:text-right">
+          <p class="text-sm font-semibold truncate max-w-[180px]">{{ user.fullname }}</p>
+          <div class="hidden sm:block">
+            <p class="text-xs text-gray-400 truncate max-w-[180px]">{{ user.studentid }}</p>
+            <p class="text-xs text-gray-400 truncate max-w-[180px]">{{ user.course || 'No course' }}</p>
+            <p class="text-xs text-gray-400 truncate max-w-[180px]">{{ user.phone_number || 'No phone number' }}</p>
           </div>
         </div>
 
         <!-- Dropdown Menu -->
-        <div v-if="showDropdown" ref="dropdown" class="absolute top-12 right-2 sm:right-0 w-52 sm:w-56 bg-white rounded-lg shadow-md py-2 z-50">
+        <div v-if="showDropdown" ref="dropdown" class="absolute top-12 right-0 w-56 bg-white rounded-lg shadow-md py-2 z-50">
           <div class="px-4 pb-2 border-b">
             <p class="text-sm font-semibold text-gray-800 truncate">{{ user.fullname }}</p>
             <div class="flex items-center justify-between mt-1">
               <p class="text-xs text-gray-500 truncate">ID: {{ user.studentid }}</p>
               <button @click="copyStudentId" type="button" class="text-xs text-blue-600 hover:underline ml-2" title="Copy student ID">Copy</button>
+            </div>
+            <div class="mt-1">
+              <p class="text-xs text-gray-500 truncate">Course: {{ user.course || 'No course' }}</p>
             </div>
             <div class="flex items-center justify-between mt-1">
               <p class="text-xs text-gray-500 truncate">{{ user.phone_number || 'No phone number' }}</p>
@@ -88,10 +92,10 @@
     </header>
 
     <!-- Hamburger Button and Notification Icon (Below Navbar) -->
-    <div class="flex items-center mb-3 sm:mb-4 space-x-2 sm:space-x-3 px-2 sm:px-0">
+    <div class="flex items-center mb-4 space-x-3">
       <!-- Hamburger Button -->
-      <button @click="toggleSidebar" type="button" class="p-1.5 sm:p-2 rounded-full bg-[#081c2d] text-white shadow hover:bg-[#00509e] focus:outline-none transition-all duration-200">
-        <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <button @click="toggleSidebar" type="button" class="ml-2 mt-2 p-2 rounded-full bg-[#081c2d] text-white shadow hover:bg-[#00509e] focus:outline-none transition-all duration-200">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
         </svg>
       </button>
@@ -100,170 +104,107 @@
       <button 
         @click="openNotificationModal" 
         type="button"
-        class="p-1.5 sm:p-2 rounded-full bg-[#081c2d] text-white shadow hover:bg-[#00509e] focus:outline-none transition-all duration-200 relative"
+        class="mt-2 p-2 rounded-full bg-[#081c2d] text-white shadow hover:bg-[#00509e] focus:outline-none transition-all duration-200 relative"
       >
-        <svg class="w-6 h-6 sm:w-8 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
         </svg>
         <!-- Unread Badge -->
         <span 
           v-if="unreadNotificationsCount > 0" 
-          class="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 px-1.5 py-0.5 bg-red-500 text-white text-[10px] sm:text-xs font-bold rounded-full min-w-[18px] sm:min-w-[20px] text-center animate-pulse"
+          class="absolute -top-1 -right-1 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full min-w-[20px] text-center animate-pulse"
         >
           {{ unreadNotificationsCount }}
+        </span>
+      </button>
+
+      <!-- Glowing Border Button - User Course (Toggle ON/OFF) -->
+      <button 
+        @click="filterByCourse"
+        type="button"
+        :class="[
+          'mt-2 px-4 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden',
+          isCourseFilterActive 
+            ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white glow-button-active' 
+            : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white glow-button'
+        ]"
+        :title="isCourseFilterActive ? 'Click to show all books' : 'Click to filter by ' + (user.course || 'your course')"
+      >
+        <span class="relative z-10 flex items-center space-x-2">
+          <svg v-if="!isCourseFilterActive" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+          </svg>
+          <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+          </svg>
+          <span>{{ isCourseFilterActive ? user.course + ' (ON)' : user.course || 'No Course' }}</span>
         </span>
       </button>
     </div>
 
     <!-- Sidebar -->
     <transition name="slide">
-      <div v-if="showSidebar" class="fixed inset-0 z-50 flex" @click.self="toggleSidebar">
-        <!-- Sidebar Panel -->
-        <div class="bg-gradient-to-b from-[#081c2d] via-[#0a2540] to-[#081c2d] w-56 sm:w-64 md:w-72 h-full shadow-2xl flex flex-col overflow-hidden">
-          <!-- Header Section -->
-          <div class="bg-gradient-to-r from-blue-600 to-teal-600 px-4 sm:px-6 py-4 sm:py-5 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                <i class="fas fa-bars text-white text-lg sm:text-xl"></i>
-              </div>
-              <div>
-                <h2 class="text-white font-bold text-lg sm:text-xl">Menu</h2>
-                <p class="text-blue-100 text-xs">Quick Access</p>
-              </div>
-            </div>
-            <button 
-              @click="toggleSidebar" 
-              type="button" 
-              class="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm flex items-center justify-center transition-all duration-200 group"
-              aria-label="Close menu"
-            >
-              <i class="fas fa-times text-white text-lg sm:text-xl group-hover:scale-110 transition-transform"></i>
+      <div v-if="showSidebar" class="fixed inset-0 z-50 flex">
+        <div class="bg-[#081c2d] w-64 h-full shadow-lg p-6 flex flex-col">
+          <div class="flex items-center justify-between mb-8">
+            <button @click="toggleSidebar" type="button" class="text-white focus:outline-none">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
             </button>
           </div>
 
-          <!-- User Info Card -->
-          <div class="px-4 sm:px-6 py-4 bg-white/5 backdrop-blur-sm border-b border-white/10">
-            <div class="flex items-center space-x-3">
-              <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-gradient-to-br from-blue-500 to-teal-500 flex items-center justify-center text-white font-bold text-lg sm:text-xl shadow-lg">
-                {{ userInitial }}
-              </div>
-              <div class="flex-1 min-w-0">
-                <p class="text-white font-semibold text-sm sm:text-base truncate">{{ user.fullname }}</p>
-                <p class="text-gray-300 text-xs truncate">{{ user.studentid }}</p>
-                <p class="text-gray-400 text-xs truncate">{{ user.phone_number || 'No phone' }}</p>
-              </div>
-            </div>
-          </div>
+          <nav class="flex flex-col space-y-4">
 
-          <!-- Navigation Menu -->
-          <nav class="flex-1 overflow-y-auto px-3 sm:px-4 py-4 space-y-2">
-            <!-- Notifications Section -->
-            <div class="mb-2">
-              <h3 class="text-gray-400 uppercase text-[10px] sm:text-xs font-semibold tracking-wider px-3 mb-2">
-                <i class="fas fa-bell mr-2"></i>Notifications
-              </h3>
-              <button 
-                @click="openNotificationModal" 
-                type="button" 
-                class="w-full flex items-center justify-between px-3 sm:px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-500/50 text-white transition-all duration-200 group"
-              >
-                <div class="flex items-center space-x-3">
-                  <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-blue-500/20 flex items-center justify-center group-hover:bg-blue-500/30 transition-colors">
-                    <i class="fas fa-bell text-blue-400 text-sm sm:text-base"></i>
-                  </div>
-                  <span class="text-sm sm:text-base font-medium">Notifications</span>
-                </div>
-                <div class="flex items-center space-x-2">
-                  <span 
-                    v-if="unreadNotificationsCount > 0" 
-                    class="px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse min-w-[20px] text-center"
-                  >
-                    {{ unreadNotificationsCount }}
-                  </span>
-                  <i class="fas fa-chevron-right text-gray-400 text-xs group-hover:translate-x-1 transition-transform"></i>
-                </div>
+            <div class="mb-4">
+              <span class="text-gray-300 uppercase text-xs tracking-wider">Notifications</span>
+              <button @click="openNotificationModal" type="button" class="flex items-center mt-2 text-white hover:text-blue-400 focus:outline-none relative">
+                <i class="fas fa-bell mr-2"></i> 
+                <span>Notification</span>
+                <span 
+                  v-if="unreadNotificationsCount > 0" 
+                  class="ml-2 px-2 py-0.5 bg-red-500 text-white text-xs font-bold rounded-full animate-pulse"
+                >
+                  {{ unreadNotificationsCount }}
+                </span>
               </button>
             </div>
-
-            <!-- Tools Section -->
-            <div class="mb-2">
-              <h3 class="text-gray-400 uppercase text-[10px] sm:text-xs font-semibold tracking-wider px-3 mb-2">
-                <i class="fas fa-tools mr-2"></i>Tools
-              </h3>
-              <button 
-                @click="openScannerModal" 
-                type="button" 
-                class="w-full flex items-center justify-between px-3 sm:px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-teal-500/50 text-white transition-all duration-200 group"
-              >
-                <div class="flex items-center space-x-3">
-                  <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-teal-500/20 flex items-center justify-center group-hover:bg-teal-500/30 transition-colors">
-                    <i class="fas fa-qrcode text-teal-400 text-sm sm:text-base"></i>
-                  </div>
-                  <span class="text-sm sm:text-base font-medium">QR Scanner</span>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400 text-xs group-hover:translate-x-1 transition-transform"></i>
-              </button>
-            </div>
-
-            <!-- History Section -->
-            <div class="mb-2">
-              <h3 class="text-gray-400 uppercase text-[10px] sm:text-xs font-semibold tracking-wider px-3 mb-2">
-                <i class="fas fa-clock mr-2"></i>History
-              </h3>
-              <button 
-                @click="openTransactionModal" 
-                type="button" 
-                class="w-full flex items-center justify-between px-3 sm:px-4 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-purple-500/50 text-white transition-all duration-200 group"
-              >
-                <div class="flex items-center space-x-3">
-                  <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-purple-500/20 flex items-center justify-center group-hover:bg-purple-500/30 transition-colors">
-                    <i class="fas fa-history text-purple-400 text-sm sm:text-base"></i>
-                  </div>
-                  <span class="text-sm sm:text-base font-medium">Transaction History</span>
-                </div>
-                <i class="fas fa-chevron-right text-gray-400 text-xs group-hover:translate-x-1 transition-transform"></i>
+              <div class="mb-4">
+                <span class="text-gray-300 uppercase text-xs tracking-wider">Scanner</span>
+                <button @click="openScannerModal" type="button" class="flex items-center mt-2 text-white hover:text-blue-400 focus:outline-none">
+                  <i class="fas fa-qrcode mr-2"></i> Scan Code
+                </button>
+              </div>
+            <div class="mb-4">
+              <span class="text-gray-300 uppercase text-xs tracking-wider">History</span>
+              <button @click="openTransactionModal" type="button" class="flex items-center mt-2 text-white hover:text-blue-400 focus:outline-none">
+                <i class="fas fa-history mr-2"></i> Transaction History
               </button>
             </div>
           </nav>
-
-          <!-- Footer Section -->
-          <div class="px-4 sm:px-6 py-4 bg-white/5 backdrop-blur-sm border-t border-white/10">
-            <p class="text-gray-400 text-xs text-center">
-              <i class="fas fa-book-open mr-1"></i>
-              SNSU BOOK CLOUD 
-            </p>
-            <p class="text-gray-500 text-[10px] text-center mt-1">
-              Version 2.0 © 2025
-            </p>
-          </div>
         </div>
-        
-        <!-- Overlay (click to close) -->
-        <div class="flex-1 bg-black/50 backdrop-blur-sm" @click="toggleSidebar"></div>
+        <div class="flex-1" @click="toggleSidebar"></div>
       </div>
     </transition>
 
     <!-- Notification Modal -->
     <div v-if="isNotificationModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4" @click.self="closeNotificationModal">
-      <div class="bg-white rounded-xl shadow-2xl p-4 sm:p-6 w-full max-w-full sm:max-w-md md:max-w-lg animate-fade-in relative max-h-[85vh] sm:max-h-[75vh] overflow-y-auto">
-        <div class="flex items-center justify-between mb-3 sm:mb-4 sticky top-0 bg-white pb-2 border-b">
-          <h3 class="text-base sm:text-lg font-bold text-gray-800 flex items-center">
-            <i class="fas fa-bell mr-2 text-blue-500"></i>
-            Notifications
-          </h3>
+      <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-full sm:max-w-md md:max-w-lg animate-fade-in relative max-h-[85vh] sm:max-h-[70vh] overflow-y-auto">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-gray-800">Notifications</h3>
           <button 
             v-if="notifications && notifications.length > 0"
             @click="markAllAsRead"
             type="button"
-            class="text-[10px] sm:text-xs text-blue-600 hover:text-blue-800 font-medium px-2 py-1 rounded-md hover:bg-blue-50 transition-colors"
+            class="text-xs text-blue-600 hover:text-blue-800 font-medium"
           >
-            Mark all read
+            Mark all as read
           </button>
         </div>
         <div class="text-gray-600">
-          <div v-if="notifications && notifications.length === 0" class="text-center py-8 sm:py-12">
-            <i class="fas fa-bell-slash text-4xl sm:text-5xl text-gray-300 mb-3"></i>
-            <p class="text-sm sm:text-base text-gray-500">No notifications yet.</p>
+          <div v-if="notifications && notifications.length === 0" class="text-center py-8">
+            <i class="fas fa-bell-slash text-4xl text-gray-300 mb-3"></i>
+            <p class="text-gray-500">No notifications yet.</p>
           </div>
           <div v-else>
             <ul class="space-y-2">
@@ -271,42 +212,42 @@
                 v-for="note in notifications" 
                 :key="note.id" 
                 :class="[
-                  'p-2.5 sm:p-3 rounded-lg relative group transition-all duration-200',
+                  'p-3 rounded-lg relative group transition-all duration-200',
                   note.read ? 'bg-gray-50' : 'bg-blue-50 border border-blue-200'
                 ]"
               >
                 <!-- Unread indicator dot -->
                 <div 
                   v-if="!note.read" 
-                  class="absolute top-2.5 sm:top-3 left-2.5 sm:left-3 w-1.5 h-1.5 sm:w-2 sm:h-2 bg-blue-500 rounded-full animate-pulse"
+                  class="absolute top-3 left-3 w-2 h-2 bg-blue-500 rounded-full animate-pulse"
                 ></div>
                 
-                <div :class="note.read ? 'ml-0' : 'ml-3 sm:ml-4'">
-                  <div class="flex items-start justify-between gap-2">
-                    <div class="flex-1 min-w-0">
-                      <p class="text-xs sm:text-sm text-gray-800 font-medium break-words">
+                <div :class="note.read ? 'ml-0' : 'ml-4'">
+                  <div class="flex items-start justify-between">
+                    <div class="flex-1">
+                      <p class="text-sm text-gray-800 font-medium">
                         {{ buildNotificationText(note, 'short') }}
                       </p>
-                      <p class="text-[10px] sm:text-xs text-gray-500 mt-1 break-words">
+                      <p class="text-xs text-gray-500 mt-1">
                         {{ buildNotificationText(note, 'long') }}
                       </p>
-                      <p v-if="note.created_at" class="text-[10px] sm:text-xs text-gray-400 mt-1 flex items-center">
+                      <p v-if="note.created_at" class="text-xs text-gray-400 mt-1 flex items-center">
                         <i class="fas fa-clock mr-1"></i>
                         {{ formatDateTime(note.created_at) }}
                       </p>
                     </div>
                     
                     <!-- Action buttons -->
-                    <div class="flex items-center space-x-1 sm:space-x-2 ml-2 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                    <div class="flex items-center space-x-2 ml-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button 
                         @click.stop="toggleReadStatus(note)"
                         type="button"
                         :title="note.read ? 'Mark as unread' : 'Mark as read'"
-                        class="p-1 sm:p-1.5 rounded-full hover:bg-gray-200 transition-colors"
+                        class="p-1.5 rounded-full hover:bg-gray-200 transition-colors"
                       >
                         <i 
                           :class="[
-                            'text-xs sm:text-sm',
+                            'text-sm',
                             note.read ? 'fas fa-envelope text-gray-600' : 'fas fa-envelope-open text-blue-600'
                           ]"
                         ></i>
@@ -315,16 +256,16 @@
                         @click.stop="deleteNotification(note.id)"
                         type="button"
                         title="Delete notification"
-                        class="p-1 sm:p-1.5 rounded-full hover:bg-red-100 transition-colors"
+                        class="p-1.5 rounded-full hover:bg-red-100 transition-colors"
                       >
-                        <i class="fas fa-trash text-xs sm:text-sm text-red-600"></i>
+                        <i class="fas fa-trash text-sm text-red-600"></i>
                       </button>
                     </div>
                   </div>
                   
                   <!-- Read status badge -->
-                  <div v-if="note.read" class="mt-1.5 sm:mt-2">
-                    <span class="text-[10px] sm:text-xs text-gray-400 flex items-center">
+                  <div v-if="note.read" class="mt-2">
+                    <span class="text-xs text-gray-400 flex items-center">
                       <i class="fas fa-check-double mr-1"></i>
                       Read
                     </span>
@@ -334,50 +275,37 @@
             </ul>
           </div>
         </div>
-        <button @click="closeNotificationModal" type="button" class="absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-          <i class="fas fa-times text-sm sm:text-base"></i>
+        <button @click="closeNotificationModal" type="button" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">
+          <i class="fas fa-times"></i>
         </button>
       </div>
     </div>
 
     <!-- Transaction History Modal -->
     <div v-if="isTransactionModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4" @click.self="closeTransactionModal">
-      <div class="bg-white rounded-xl shadow-2xl p-4 sm:p-6 w-full max-w-full sm:max-w-md md:max-w-2xl animate-fade-in relative max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
-        <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 flex items-center">
-          <i class="fas fa-history mr-2 text-purple-500"></i>
-          Transaction History
-        </h3>
-        <div v-if="myRequests.length === 0" class="text-center py-8 sm:py-12 text-gray-600">
-          <i class="fas fa-inbox text-4xl sm:text-5xl text-gray-300 mb-3"></i>
-          <p class="text-sm sm:text-base">No transaction history yet.</p>
-        </div>
-        <div v-else class="overflow-x-auto">
-          <table class="w-full border-collapse text-xs sm:text-sm">
+      <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-full sm:max-w-md md:max-w-lg animate-fade-in relative max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Transaction History</h3>
+        <div v-if="myRequests.length === 0" class="text-gray-600">No transaction history yet.</div>
+        <div v-else>
+          <table class="w-full border-collapse text-sm">
             <thead>
-              <tr class="bg-gray-100">
-                <th class="py-2 px-2 sm:px-3 text-left font-semibold text-gray-700">Book</th>
-                <th class="py-2 px-2 sm:px-3 text-left font-semibold text-gray-700">Type</th>
-                <th class="py-2 px-2 sm:px-3 text-left font-semibold text-gray-700 hidden sm:table-cell">Start</th>
-                <th class="py-2 px-2 sm:px-3 text-left font-semibold text-gray-700">Status</th>
-              </tr>
+              <tr>
+                  <th class="py-2 px-2 text-left">Book</th>
+                  <th class="py-2 px-2 text-left">Type</th>
+                  <th class="py-2 px-2 text-left">Start</th>
+                  <th class="py-2 px-2 text-left">Status</th>
+                </tr>
             </thead>
             <tbody>
-              <tr v-for="req in myRequests" :key="req.id" class="border-b hover:bg-gray-50 transition-colors">
-                <td class="py-2 px-2 sm:px-3 max-w-[120px] sm:max-w-none truncate" :title="req.book_title">{{ req.book_title }}</td>
-                <td class="py-2 px-2 sm:px-3 capitalize">
-                  <span class="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium" :class="{
-                    'bg-blue-100 text-blue-700': req.request_type === 'borrow',
-                    'bg-purple-100 text-purple-700': req.request_type === 'reserve'
-                  }">
-                    {{ req.request_type }}
-                  </span>
-                </td>
-                <td class="py-2 px-2 sm:px-3 hidden sm:table-cell">{{ formatDate(req.request_date) }}</td>
-                <td class="py-2 px-2 sm:px-3">
-                  <span class="px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-medium" :class="{
-                    'bg-yellow-100 text-yellow-700': req.status === 'pending',
-                    'bg-green-100 text-green-700': req.status === 'approved',
-                    'bg-red-100 text-red-700': req.status === 'rejected'
+              <tr v-for="req in myRequests" :key="req.id" class="odd:bg-gray-50 even:bg-white">
+                <td class="py-2 px-2">{{ req.book_title }}</td>
+                <td class="py-2 px-2 capitalize">{{ req.request_type }}</td>
+                <td class="py-2 px-2">{{ formatDate(req.request_date) }}</td>
+                <td class="py-2 px-2">
+                  <span :class="{
+                    'text-yellow-600': req.status === 'pending',
+                    'text-green-600': req.status === 'approved',
+                    'text-red-600': req.status === 'rejected'
                   }">
                     {{ req.status }}
                   </span>
@@ -386,25 +314,19 @@
             </tbody>
           </table>
         </div>
-        <button @click="closeTransactionModal" type="button" class="absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-          <i class="fas fa-times text-sm sm:text-base"></i>
+        <button @click="closeTransactionModal" type="button" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">
+          <i class="fas fa-times"></i>
         </button>
       </div>
     </div>
 
     <!-- Borrowed/Reserve Book Modal -->
     <div v-if="isBorrowedModalOpen" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4" @click.self="closeBorrowedModal">
-      <div class="bg-white rounded-xl shadow-2xl p-4 sm:p-6 w-full max-w-full sm:max-w-md animate-fade-in relative">
-        <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 flex items-center">
-          <i class="fas fa-book mr-2 text-teal-500"></i>
-          Borrowed/Reserve Book
-        </h3>
-        <div class="text-center py-8 sm:py-12 text-gray-600">
-          <i class="fas fa-book-open text-4xl sm:text-5xl text-gray-300 mb-3"></i>
-          <p class="text-sm sm:text-base">No borrowed or reserved books yet.</p>
-        </div>
-        <button @click="closeBorrowedModal" type="button" class="absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-          <i class="fas fa-times text-sm sm:text-base"></i>
+      <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-full sm:max-w-md md:max-w-lg animate-fade-in relative">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Borrowed/Reserve Book</h3>
+        <div class="text-gray-600">No borrowed or reserved books yet.</div>
+        <button @click="closeBorrowedModal" type="button" class="absolute top-2 right-2 text-gray-400 hover:text-gray-700">
+          <i class="fas fa-times"></i>
         </button>
       </div>
     </div>
@@ -416,118 +338,151 @@
 
 
     <!-- Book Cards -->
-    <main class="container mx-auto px-2 py-3 sm:px-4 sm:py-4 md:p-6 lg:p-10">
-      <div class="flex items-center justify-between mb-4 sm:mb-6">
-        <h1 class="text-lg sm:text-xl md:text-2xl font-semibold">Available Books</h1>
-      </div>
+    <main class="container mx-auto p-6 md:p-10">
+      <h1 class="text-2xl font-semibold mb-6">Available Books</h1>
 
-      <!-- Color Legend -->
-      <div class="mb-4 sm:mb-6 bg-white p-3 sm:p-4 rounded-lg shadow-md">
-        <h3 class="text-xs sm:text-sm font-semibold text-gray-700 mb-2 sm:mb-3">📚 Book Age Color Guide:</h3>
-        <div class="flex flex-wrap gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm">
-          <button
-            @click="filterByAge('green')"
-            type="button"
+      <!-- Book Age Legend with Filter and Sort -->
+      <div class="mb-6 bg-white p-4 rounded-lg shadow-md border border-gray-200">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+          <i class="fas fa-filter mr-2 text-blue-500"></i>
+          📚 Book Age Color Guide:
+        </h3>
+        <div class="flex flex-wrap gap-3 text-sm">
+          <!-- Sort Dropdown -->
+          <div class="flex items-center gap-2 w-full sm:w-auto">
+            <label class="text-sm font-medium text-gray-700 whitespace-nowrap">
+              <i class="fas fa-sort mr-1"></i>
+              Sort By:
+            </label>
+            <select 
+              v-model="sortBy" 
+              class="flex-1 sm:flex-none px-3 sm:px-4 py-2 sm:py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 text-sm sm:min-w-[200px]"
+            >
+              <option value="title-asc">Title (A-Z)</option>
+              <option value="title-desc">Title (Z-A)</option>
+              <option value="author-asc">Author (A-Z)</option>
+              <option value="author-desc">Author (Z-A)</option>
+              <option value="course-asc">Course (A-Z)</option>
+              <option value="course-desc">Course (Z-A)</option>
+              <option value="availability">Availability</option>
+              <option value="age-newest">Book Age (Newest)</option>
+              <option value="age-oldest">Book Age (Oldest)</option>
+            </select>
+          </div>
+
+          <!-- Age Filter Buttons -->
+          <button 
+            type="button" 
+            @click="toggleAgeFilter('new')"
             :class="[
-              'flex items-center space-x-1.5 sm:space-x-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-all',
-              selectedAgeFilter === 'green' ? 'bg-green-100 ring-2 ring-green-500' : 'hover:bg-gray-100'
+              'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+              ageFilter === 'new' ? 'bg-green-100 ring-2 ring-green-500' : 'hover:bg-gray-100'
             ]"
           >
-            <div class="w-5 h-5 sm:w-6 sm:h-6 border-3 sm:border-4 border-green-500 rounded flex-shrink-0"></div>
-            <span class="text-gray-700 text-[11px] sm:text-sm">0-2 years</span>
+            <div class="w-6 h-6 border-4 border-green-500 rounded flex-shrink-0"></div>
+            <span class="text-gray-700">0-2 years (New)</span>
           </button>
-          <button
-            @click="filterByAge('blue')"
-            type="button"
+
+          <button 
+            type="button" 
+            @click="toggleAgeFilter('recent')"
             :class="[
-              'flex items-center space-x-1.5 sm:space-x-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-all',
-              selectedAgeFilter === 'blue' ? 'bg-blue-100 ring-2 ring-blue-500' : 'hover:bg-gray-100'
+              'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+              ageFilter === 'recent' ? 'bg-blue-100 ring-2 ring-blue-500' : 'hover:bg-gray-100'
             ]"
           >
-            <div class="w-5 h-5 sm:w-6 sm:h-6 border-3 sm:border-4 border-blue-500 rounded flex-shrink-0"></div>
-            <span class="text-gray-700 text-[11px] sm:text-sm">3-4 years</span>
+            <div class="w-6 h-6 border-4 border-blue-500 rounded flex-shrink-0"></div>
+            <span class="text-gray-700">3-4 years</span>
           </button>
-          <button
-            @click="filterByAge('yellow')"
-            type="button"
+
+          <button 
+            type="button" 
+            @click="toggleAgeFilter('moderate')"
             :class="[
-              'flex items-center space-x-1.5 sm:space-x-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-all',
-              selectedAgeFilter === 'yellow' ? 'bg-yellow-100 ring-2 ring-yellow-500' : 'hover:bg-gray-100'
+              'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+              ageFilter === 'moderate' ? 'bg-yellow-100 ring-2 ring-yellow-500' : 'hover:bg-gray-100'
             ]"
           >
-            <div class="w-5 h-5 sm:w-6 sm:h-6 border-3 sm:border-4 border-yellow-500 rounded flex-shrink-0"></div>
-            <span class="text-gray-700 text-[11px] sm:text-sm">5-6 years</span>
+            <div class="w-6 h-6 border-4 border-yellow-500 rounded flex-shrink-0"></div>
+            <span class="text-gray-700">5-6 years</span>
           </button>
-          <button
-            @click="filterByAge('orange')"
-            type="button"
+
+          <button 
+            type="button" 
+            @click="toggleAgeFilter('older')"
             :class="[
-              'flex items-center space-x-1.5 sm:space-x-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-all',
-              selectedAgeFilter === 'orange' ? 'bg-orange-100 ring-2 ring-orange-500' : 'hover:bg-gray-100'
+              'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+              ageFilter === 'older' ? 'bg-orange-100 ring-2 ring-orange-500' : 'hover:bg-gray-100'
             ]"
           >
-            <div class="w-5 h-5 sm:w-6 sm:h-6 border-3 sm:border-4 border-orange-500 rounded flex-shrink-0"></div>
-            <span class="text-gray-700 text-[11px] sm:text-sm">7-9 years</span>
+            <div class="w-6 h-6 border-4 border-orange-500 rounded flex-shrink-0"></div>
+            <span class="text-gray-700">7-9 years</span>
           </button>
-          <button
-            @click="filterByAge('red')"
-            type="button"
+
+          <button 
+            type="button" 
+            @click="toggleAgeFilter('old')"
             :class="[
-              'flex items-center space-x-1.5 sm:space-x-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg transition-all',
-              selectedAgeFilter === 'red' ? 'bg-red-100 ring-2 ring-red-500' : 'hover:bg-gray-100'
+              'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+              ageFilter === 'old' ? 'bg-red-100 ring-2 ring-red-500' : 'hover:bg-gray-100'
             ]"
           >
-            <div class="w-5 h-5 sm:w-6 sm:h-6 border-3 sm:border-4 border-red-500 rounded flex-shrink-0"></div>
-            <span class="text-gray-700 text-[11px] sm:text-sm">10+ years</span>
+            <div class="w-6 h-6 border-4 border-red-500 rounded flex-shrink-0"></div>
+            <span class="text-gray-700">10+ years (Old)</span>
           </button>
-          <button
-            v-if="selectedAgeFilter"
+
+          <!-- Clear Filter Button -->
+          <button 
+            v-if="ageFilter"
+            type="button" 
             @click="clearAgeFilter"
-            type="button"
-            class="flex items-center space-x-1.5 sm:space-x-2 px-2 py-1.5 sm:px-3 sm:py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-all"
+            class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-all"
           >
-            <i class="fas fa-times text-xs sm:text-sm"></i>
-            <span class="text-gray-700 font-semibold text-[11px] sm:text-sm">Clear</span>
+            <i class="fas fa-times"></i>
+            <span class="text-gray-700 font-semibold">Clear Filter</span>
           </button>
         </div>
       </div>
 
-  <!-- Responsive grid: 2 columns on mobile, 3 on tablet, 4 on desktop -->
-  <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 books-grid">
+  <!-- Force 3 columns across most viewports; switch to 2 columns for very small phones (<=360px) -->
+  <div class="grid grid-cols-3 gap-4 books-grid">
       <div 
         v-for="book in filteredBooks" 
         :key="book.id" 
         @click="openModal(book)"
-        class="bg-white shadow-md rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition transform"
-        :style="{ borderWidth: '3px', borderStyle: 'solid', borderColor: getBookAgeBorderColorHex(book.publicationDate) }">
-        <div class="w-full h-40 sm:h-48 md:h-56 overflow-hidden bg-gray-100 book-cover">
+        :class="[
+          'bg-white shadow-md rounded-lg overflow-hidden cursor-pointer hover:scale-105 transition transform border-2 md:border-4',
+          getBookAgeBorderClass(book)
+        ]">
+        <div class="w-full h-56 overflow-hidden bg-gray-100 book-cover">
           <img 
             :src="book.image_url || '/img/default-book.jpg'" 
-            alt="Book Cover" 
+            alt="Book Cover"
+            loading="lazy"
             class="w-full h-full object-cover block"
           />
         </div>
-        <div class="p-2 sm:p-3 md:p-4">
-          <h6 :title="book.title" class="text-sm sm:text-base md:text-xl font-extrabold text-gray-900 leading-tight mb-1 line-clamp-2">{{ book.title }}</h6>
+        <div class="p-4">
+          <h6 :title="book.title" class="text-xl font-extrabold text-gray-900 leading-tight mb-1 line-clamp-2">{{ book.title }}</h6>
           <button
             @click.stop="viewQrCode(book.id, book.title)"
             type="button"
-            class="mt-1 sm:mt-2 inline-flex items-center px-2 py-0.5 sm:px-3 sm:py-1 bg-gray-100 text-xs sm:text-sm text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none"
+            class="mt-2 inline-flex items-center px-3 py-1 bg-gray-100 text-sm text-gray-700 rounded-md hover:bg-gray-200 focus:outline-none"
           >
-            <i class="fas fa-qrcode mr-1 sm:mr-2 text-xs"></i>
-            <span class="hidden sm:inline">View QR Code</span>
-            <span class="sm:hidden">QR</span>
+            <i class="fas fa-qrcode mr-2"></i>
+            View QR Code
           </button>
-          <p class="text-xs sm:text-sm text-gray-600 mt-1 sm:mt-2 line-clamp-2">{{ book.description }}</p>
-          <p class="text-xs sm:text-sm text-gray-700 mt-1"><span class="font-semibold">Course:</span> <span class="font-semibold">{{ book.course || 'N/A' }}</span></p>
-          <p class="text-xs sm:text-sm text-gray-700 mt-0.5 sm:mt-1"><span class="font-semibold">Author:</span> <span class="font-semibold">{{ book.author }}</span></p>
+          <p class="text-sm text-gray-600 mt-2">{{ book.description }}</p>
+          <p class="text-sm text-gray-700 mt-1"><span class="font-semibold">Subject:</span> <span class="font-semibold">{{ book.subject || 'N/A' }}</span></p>
+          <p class="text-sm text-gray-700 mt-1"><span class="font-semibold">Course:</span> <span class="font-semibold">{{ book.course || 'N/A' }}</span></p>
+          <p class="text-sm text-gray-700 mt-1"><span class="font-semibold">Author:</span> <span class="font-semibold">{{ book.author }}</span></p>
           <span 
             :class="{
               'text-green-600 font-medium': book.availability === 'Available',
               'text-red-600 font-medium': book.availability === 'Borrowed',
               'text-yellow-600 font-medium': book.availability === 'Reserved'
             }"
-            class="block mt-1 sm:mt-2 text-xs sm:text-sm">
+            class="block mt-2">
             {{ book.availability }}
           </span>
         </div>
@@ -539,17 +494,17 @@
       v-if="isModalOpen" 
       class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4"
       @click.self="closeModal">
-  <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-full sm:max-w-md animate-fade-in relative max-h-[90vh] overflow-y-auto">
-  <h3 class="text-base sm:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">Request Book <span v-if="selectedBook" class="text-xs sm:text-sm text-gray-500 font-normal block sm:inline mt-1 sm:mt-0">- {{ selectedBook.title }}</span></h3>
-        <form @submit.prevent="submitRequest" class="space-y-3 sm:space-y-4">
+  <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-full sm:max-w-md md:max-w-lg animate-fade-in relative max-h-[90vh] overflow-y-auto">
+  <h3 class="text-lg font-semibold text-gray-800 mb-4">Request Book <span v-if="selectedBook" class="text-sm text-gray-500 font-normal">- {{ selectedBook.title }}</span></h3>
+        <form @submit.prevent="submitRequest" class="space-y-4">
           <!-- Request Type Selection -->
           <div>
-            <label for="requestType" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Request Type:</label>
+            <label for="requestType" class="block text-sm font-medium text-gray-700">Request Type:</label>
             <select 
               id="requestType"
               name="requestType"
               v-model="requestType" 
-              class="w-full p-2 sm:p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             >
               <option value="">Select a request type</option>
@@ -560,7 +515,7 @@
 
           <!-- Start Date -->
           <div>
-            <label for="startDate" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Start Date:</label>
+            <label for="startDate" class="block text-sm font-medium text-gray-700">Start Date:</label>
             <input 
               id="startDate"
               name="startDate"
@@ -568,7 +523,7 @@
               v-model="startDate"
               @change="onStartDateChange"
               autocomplete="off"
-              class="w-full p-2 sm:p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
               :min="new Date().toISOString().split('T')[0]"
               required
             />
@@ -576,7 +531,7 @@
 
           <!-- Return Date -->
           <div>
-            <label for="returnDate" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">
+            <label for="returnDate" class="block text-sm font-medium text-gray-700">
               {{ requestType === 'borrow' ? 'Return Date' : 'Until Date' }}:
             </label>
             <input 
@@ -585,23 +540,23 @@
               type="date" 
               v-model="returnDate"
               autocomplete="off"
-              class="w-full p-2 sm:p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
               :min="returnDateMin"
               required
             />
           </div>
 
-          <div class="flex justify-end space-x-2 sm:space-x-3 pt-2">
+          <div class="flex justify-end space-x-3">
             <button 
               type="button"
               @click="closeModal"
-              class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg"
+              class="px-4 py-2 text-black-600 hover:bg-black-100 rounded-lg"
             >
               Cancel
             </button>
             <button 
               type="submit"
-              class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
               :disabled="!requestType || !startDate || !returnDate"
             >
               Submit Request
@@ -616,61 +571,58 @@
       class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4"
       @click.self="closeProfileModal"
     >
-      <div class="bg-white rounded-xl shadow-2xl p-4 sm:p-6 w-full max-w-full sm:max-w-md animate-fade-in relative max-h-[90vh] overflow-y-auto">
-        <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 flex items-center">
-          <i class="fas fa-user-edit mr-2 text-blue-500"></i>
-          Edit Profile
-        </h3>
-        <form @submit.prevent="updateProfile" class="space-y-3 sm:space-y-4">
+  <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-full sm:max-w-md md:max-w-lg animate-fade-in max-h-[90vh] overflow-y-auto">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Edit Profile</h3>
+        <form @submit.prevent="updateProfile" class="space-y-4">
           <div>
-            <label for="profileFullname" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Full Name:</label>
+            <label for="profileFullname" class="block text-sm font-medium text-gray-700">Full Name:</label>
             <input 
               id="profileFullname"
               name="fullname"
               type="text" 
               v-model="profileForm.fullname"
               autocomplete="name"
-              class="w-full p-2 sm:p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             />
           </div>
 
           <div>
-            <label for="profileEmail" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Email:</label>
+            <label for="profileEmail" class="block text-sm font-medium text-gray-700">Email:</label>
             <input 
               id="profileEmail"
               name="email"
               type="email" 
               v-model="profileForm.email"
               autocomplete="email"
-              class="w-full p-2 sm:p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
               required
             />
           </div>
 
           <div>
-            <label for="profilePhone" class="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Phone Number:</label>
+            <label for="profilePhone" class="block text-sm font-medium text-gray-700">Phone Number:</label>
             <input 
               id="profilePhone"
               name="phone_number"
               type="tel" 
               v-model="profileForm.phone_number"
               autocomplete="tel"
-              class="w-full p-2 sm:p-3 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all"
+              class="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
           </div>
 
-          <div class="flex justify-end space-x-2 sm:space-x-3 pt-2">
+          <div class="flex justify-end space-x-3">
             <button 
               type="button"
               @click="closeProfileModal"
-              class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+              class="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
             >
               Cancel
             </button>
             <button 
               type="submit"
-              class="px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+              class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
             >
               Save Changes
             </button>
@@ -681,43 +633,22 @@
 
     <!-- QR Modal -->
     <div v-if="showQrModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 p-2 sm:p-4" @click.self="showQrModal = false">
-      <div class="bg-white rounded-xl shadow-2xl p-4 sm:p-6 w-full max-w-full sm:max-w-md animate-fade-in relative max-h-[85vh] overflow-y-auto">
-        <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-3 sm:mb-4 flex items-center">
-          <i class="fas fa-qrcode mr-2 text-teal-500"></i>
-          <span class="truncate">QR Code - {{ qrModalBookTitle }}</span>
-        </h3>
+      <div class="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-full sm:max-w-md md:max-w-lg animate-fade-in relative max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">QR Code - {{ qrModalBookTitle }}</h3>
         
         <!-- QR Code Display with Loading State -->
-        <div v-if="qrModalSvg && qrModalSvg.length > 0" class="flex justify-center mb-4 p-4 bg-gray-50 rounded-lg" v-html="qrModalSvg"></div>
-        <div v-else class="flex justify-center items-center h-48 sm:h-64 mb-4 bg-gray-50 rounded-lg">
+        <div v-if="qrModalSvg && qrModalSvg.length > 0" class="flex justify-center mb-4" v-html="qrModalSvg"></div>
+        <div v-else class="flex justify-center items-center h-48 mb-4">
           <div class="text-center">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 sm:h-10 sm:w-10 border-b-2 border-blue-500 mb-2"></div>
-            <p class="text-gray-500 text-xs sm:text-sm">Loading QR code...</p>
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+            <p class="text-gray-500 text-sm">Loading QR code...</p>
           </div>
         </div>
         
-        <div class="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3">
-          <button 
-            @click="downloadQr" 
-            type="button" 
-            :disabled="!qrModalSvg" 
-            class="w-full sm:w-auto px-3 py-2 sm:px-4 text-xs sm:text-sm bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
-          >
-            <i class="fas fa-download mr-2"></i>
-            Download PNG
-          </button>
-          <button 
-            @click="showQrModal = false" 
-            type="button" 
-            class="w-full sm:w-auto px-3 py-2 sm:px-4 text-xs sm:text-sm bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center"
-          >
-            <i class="fas fa-times mr-2"></i>
-            Close
-          </button>
+        <div class="flex justify-end space-x-3">
+          <button @click="downloadQr" type="button" :disabled="!qrModalSvg" class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed">Download PNG</button>
+          <button @click="showQrModal = false" type="button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Close</button>
         </div>
-        <button @click="showQrModal = false" type="button" class="absolute top-2 right-2 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-          <i class="fas fa-times text-sm sm:text-base"></i>
-        </button>
       </div>
     </div>
 
@@ -932,6 +863,7 @@
 
 <script>
   import { Link, usePage, router } from '@inertiajs/vue3';
+  import jsQR from 'jsqr';
 
   export default {
     components: {
@@ -957,7 +889,8 @@
     data() {
       return {
         searchQuery: '',
-        selectedAgeFilter: null, // null, 'green', 'blue', 'yellow', 'orange', 'red'
+        sortBy: 'title-asc',
+        ageFilter: null, // null, 'new', 'recent', 'moderate', 'older', 'old'
         showQrModal: false,
         qrModalSvg: '',
         qrModalBookId: null,
@@ -985,6 +918,7 @@
         requestType: '',
         startDate: '',
         returnDate: '',
+        isCourseFilterActive: false, // Toggle state for course filter
         profileForm: {
           fullname: '',
           email: '',
@@ -1012,21 +946,81 @@
         return this.user.fullname.charAt(0);
       },
       filteredBooks() {
-        let books = this.books.filter(book => 
-          book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-          book.author.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-          (book.course && book.course.toLowerCase().includes(this.searchQuery.toLowerCase()))
-        );
+        // Step 1: Filter by course if toggle is active
+        let filtered = this.books;
+        
+        if (this.isCourseFilterActive && this.user.course) {
+          // When toggle is ON, only show books for user's course
+          filtered = filtered.filter(book => 
+            book.course && book.course.toLowerCase().includes(this.user.course.toLowerCase())
+          );
+        }
 
-        // Apply age filter if selected
-        if (this.selectedAgeFilter) {
-          books = books.filter(book => {
-            const color = this.getBookAgeColorName(book.publicationDate);
-            return color === this.selectedAgeFilter;
+        // Step 2: Apply search query within the filtered set
+        if (this.searchQuery) {
+          filtered = filtered.filter(book => 
+            book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+            book.author.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+            (book.course && book.course.toLowerCase().includes(this.searchQuery.toLowerCase())) ||
+            (book.subject && book.subject.toLowerCase().includes(this.searchQuery.toLowerCase()))
+          );
+        }
+
+        // Apply age filter
+        if (this.ageFilter) {
+          filtered = filtered.filter(book => {
+            const age = this.getBookAge(book);
+            switch (this.ageFilter) {
+              case 'new':
+                return age <= 2;
+              case 'recent':
+                return age >= 3 && age <= 4;
+              case 'moderate':
+                return age >= 5 && age <= 6;
+              case 'older':
+                return age >= 7 && age <= 9;
+              case 'old':
+                return age >= 10;
+              default:
+                return true;
+            }
           });
         }
 
-        return books;
+        // Apply sorting
+        const sorted = [...filtered];
+        switch (this.sortBy) {
+          case 'title-asc':
+            sorted.sort((a, b) => a.title.localeCompare(b.title));
+            break;
+          case 'title-desc':
+            sorted.sort((a, b) => b.title.localeCompare(a.title));
+            break;
+          case 'author-asc':
+            sorted.sort((a, b) => a.author.localeCompare(b.author));
+            break;
+          case 'author-desc':
+            sorted.sort((a, b) => b.author.localeCompare(a.author));
+            break;
+          case 'course-asc':
+            sorted.sort((a, b) => (a.course || '').localeCompare(b.course || ''));
+            break;
+          case 'course-desc':
+            sorted.sort((a, b) => (b.course || '').localeCompare(a.course || ''));
+            break;
+          case 'availability':
+            // Sort by availability: Available -> Reserved -> Borrowed
+            const order = { 'Available': 1, 'Reserved': 2, 'Borrowed': 3 };
+            sorted.sort((a, b) => (order[a.availability] || 999) - (order[b.availability] || 999));
+            break;
+          case 'age-newest':
+            sorted.sort((a, b) => this.getBookAge(a) - this.getBookAge(b));
+            break;
+          case 'age-oldest':
+            sorted.sort((a, b) => this.getBookAge(b) - this.getBookAge(a));
+            break;
+        }
+        return sorted;
       },
       unreadNotificationsCount() {
         if (!this.notifications || !Array.isArray(this.notifications)) return 0;
@@ -1236,9 +1230,6 @@
         }
 
         try {
-          // Load jsQR library
-          const jsQR = await this.loadJsQR();
-          
           // Create an image element
           const img = new Image();
           img.onload = () => {
@@ -1333,6 +1324,35 @@
       toggleSidebar() {
         this.showSidebar = !this.showSidebar;
       },
+      filterByCourse() {
+        if (!this.user.course) {
+          this.showToast = true;
+          this.toastMessage = 'No course assigned to your account';
+          setTimeout(() => (this.showToast = false), 2500);
+          return;
+        }
+
+        // Toggle the filter state
+        this.isCourseFilterActive = !this.isCourseFilterActive;
+
+        if (this.isCourseFilterActive) {
+          // Turn ON: Filter by user's course only
+          this.showToast = true;
+          this.toastMessage = `Showing books for ${this.user.course} only`;
+          setTimeout(() => (this.showToast = false), 2500);
+        } else {
+          // Turn OFF: Show all books
+          this.showToast = true;
+          this.toastMessage = 'Showing all books';
+          setTimeout(() => (this.showToast = false), 2500);
+        }
+
+        // Scroll to the books section
+        const booksSection = document.querySelector('main');
+        if (booksSection) {
+          booksSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      },
       openNotificationModal() {
         this.isNotificationModalOpen = true;
         this.showSidebar = false;
@@ -1385,7 +1405,9 @@
     }, {
       onSuccess: () => {
         this.closeModal();
-        window.location.reload();
+        this.showToast = true;
+        this.toastMessage = 'Reservation submitted successfully!';
+        setTimeout(() => (this.showToast = false), 3000);
       },
       onError: (errors) => {
         console.error(errors);
@@ -1404,7 +1426,9 @@
     }, {
       onSuccess: () => {
         this.closeModal();
-        window.location.reload();
+        this.showToast = true;
+        this.toastMessage = 'Borrow request submitted successfully!';
+        setTimeout(() => (this.showToast = false), 3000);
       },
       onError: (errors) => {
         console.error(errors);
@@ -1415,7 +1439,7 @@
       }
     });
   }
-},
+      },
       openProfileModal() {
         this.profileForm.fullname = this.user.fullname;
         this.profileForm.email = this.user.email;
@@ -1534,22 +1558,14 @@
             return variant === 'short'
               ? short(`Reservation ready: ${book} is available.`)
               : long(`Hi ${userName}, the book you reserved — "${book}" — is now available for pickup. Please collect it by ${this.formatDate(untilDate)}.`);
-          case 'due_in_2_days':
-            return variant === 'short'
-              ? short(`Due in 2 days: ${book}`)
-              : long(`Reminder: "${book}" is due on ${this.formatDate(dueDate)} (in 2 days). Please return or extend to avoid fines.`);
-          case 'due_tomorrow':
-            return variant === 'short'
-              ? short(`Due tomorrow: ${book}`)
-              : long(`Heads up — "${book}" is due tomorrow (${this.formatDate(dueDate)}). Return or contact the library to extend your loan.`);
-          case 'due_today':
-            return variant === 'short'
-              ? short(`Due today: ${book}`)
-              : long(`Important: "${book}" is due TODAY (${this.formatDate(dueDate)}). Please return it to avoid late fees.`);
           case 'due_soon':
             return variant === 'short'
               ? short(`Due in ${daysLeft || 3} days: ${book}`)
               : long(`Reminder: "${book}" is due on ${this.formatDate(dueDate)} (in ${daysLeft || 3} days). Please return or extend to avoid fines.`);
+          case 'due_tomorrow':
+            return variant === 'short'
+              ? short(`Due tomorrow: ${book}`)
+              : long(`Heads up — "${book}" is due tomorrow (${this.formatDate(dueDate)}). Return or contact the library to extend your loan.`);
           case 'overdue':
             return variant === 'short'
               ? short(`Overdue: ${book}`)
@@ -1687,83 +1703,13 @@
           day: 'numeric',
         });
       },
-      getBookAgeBorderColor(publicationDate) {
-        if (!publicationDate) return 'border-gray-300';
-        
-        const pubDate = new Date(publicationDate);
-        const currentDate = new Date();
-        const yearsDiff = currentDate.getFullYear() - pubDate.getFullYear();
-        
-        // Green: 0-2 years
-        if (yearsDiff >= 0 && yearsDiff <= 2) return 'border-green-500';
-        // Blue: 3-4 years
-        if (yearsDiff >= 3 && yearsDiff <= 4) return 'border-blue-500';
-        // Yellow: 5-6 years
-        if (yearsDiff >= 5 && yearsDiff <= 6) return 'border-yellow-500';
-        // Orange: 7-9 years
-        if (yearsDiff >= 7 && yearsDiff <= 9) return 'border-orange-500';
-        // Red: 10+ years
-        if (yearsDiff >= 10) return 'border-red-500';
-        
-        return 'border-gray-300';
-      },
-      getBookAgeBorderColorHex(publicationDate) {
-        if (!publicationDate) return '#D1D5DB'; // gray-300
-        
-        const pubDate = new Date(publicationDate);
-        const currentDate = new Date();
-        const yearsDiff = currentDate.getFullYear() - pubDate.getFullYear();
-        
-        // Green: 0-2 years
-        if (yearsDiff >= 0 && yearsDiff <= 2) return '#10B981'; // green-500
-        // Blue: 3-4 years
-        if (yearsDiff >= 3 && yearsDiff <= 4) return '#3B82F6'; // blue-500
-        // Yellow: 5-6 years
-        if (yearsDiff >= 5 && yearsDiff <= 6) return '#EAB308'; // yellow-500
-        // Orange: 7-9 years
-        if (yearsDiff >= 7 && yearsDiff <= 9) return '#F97316'; // orange-500
-        // Red: 10+ years
-        if (yearsDiff >= 10) return '#EF4444'; // red-500
-        
-        return '#D1D5DB'; // gray-300
-      },
-      getBookAgeColorName(publicationDate) {
-        if (!publicationDate) return null;
-        
-        const pubDate = new Date(publicationDate);
-        const currentDate = new Date();
-        const yearsDiff = currentDate.getFullYear() - pubDate.getFullYear();
-        
-        // Green: 0-2 years
-        if (yearsDiff >= 0 && yearsDiff <= 2) return 'green';
-        // Blue: 3-4 years
-        if (yearsDiff >= 3 && yearsDiff <= 4) return 'blue';
-        // Yellow: 5-6 years
-        if (yearsDiff >= 5 && yearsDiff <= 6) return 'yellow';
-        // Orange: 7-9 years
-        if (yearsDiff >= 7 && yearsDiff <= 9) return 'orange';
-        // Red: 10+ years
-        if (yearsDiff >= 10) return 'red';
-        
-        return null;
-      },
-      filterByAge(color) {
-        if (this.selectedAgeFilter === color) {
-          // If clicking the same filter, clear it
-          this.selectedAgeFilter = null;
-        } else {
-          this.selectedAgeFilter = color;
-        }
-      },
-      clearAgeFilter() {
-        this.selectedAgeFilter = null;
-      },
       toggleReadStatus(notification) {
         // Toggle read/unread status
         router.post(route('notifications.toggle-read', notification.id), {}, {
           preserveScroll: true,
+          preserveState: true,
           onSuccess: () => {
-            window.location.reload();
+            // Inertia will automatically update the data
           },
           onError: (errors) => {
             console.error('Failed to toggle notification status:', errors);
@@ -1776,11 +1722,11 @@
       markAllAsRead() {
         router.post(route('notifications.mark-all-read'), {}, {
           preserveScroll: true,
+          preserveState: true,
           onSuccess: () => {
             this.showToast = true;
             this.toastMessage = 'All notifications marked as read';
             setTimeout(() => (this.showToast = false), 2000);
-            window.location.reload();
           },
           onError: (errors) => {
             console.error('Failed to mark all as read:', errors);
@@ -1797,11 +1743,11 @@
         
         router.delete(route('notifications.destroy', notificationId), {
           preserveScroll: true,
+          preserveState: true,
           onSuccess: () => {
             this.showToast = true;
             this.toastMessage = 'Notification deleted';
             setTimeout(() => (this.showToast = false), 2000);
-            window.location.reload();
           },
           onError: (errors) => {
             console.error('Failed to delete notification:', errors);
@@ -1810,6 +1756,47 @@
             setTimeout(() => (this.showToast = false), 3000);
           }
         });
+      },
+      getBookAgeBorderClass(book) {
+        if (!book.publicationDate) {
+          return 'border-gray-400 hover:border-gray-500'; // Default if no publication date
+        }
+
+        const ageInYears = this.getBookAge(book);
+
+        // Color coding based on book age
+        if (ageInYears <= 2) {
+          return 'border-green-500 hover:border-green-600'; // 0-2 years: Green (New)
+        } else if (ageInYears <= 4) {
+          return 'border-blue-500 hover:border-blue-600'; // 3-4 years: Blue (Recent)
+        } else if (ageInYears <= 6) {
+          return 'border-yellow-500 hover:border-yellow-600'; // 5-6 years: Yellow (Moderate)
+        } else if (ageInYears <= 9) {
+          return 'border-orange-500 hover:border-orange-600'; // 7-9 years: Orange (Older)
+        } else {
+          return 'border-red-500 hover:border-red-600'; // 10+ years: Red (Old)
+        }
+      },
+      getBookAge(book) {
+        if (!book.publicationDate) return 999; // Return high number for books without publication date
+
+        const pubDate = new Date(book.publicationDate);
+        const currentDate = new Date();
+        const ageInYears = currentDate.getFullYear() - pubDate.getFullYear();
+
+        // Adjust if birthday hasn't occurred this year
+        const adjustedAge = (currentDate.getMonth() < pubDate.getMonth() || 
+                            (currentDate.getMonth() === pubDate.getMonth() && currentDate.getDate() < pubDate.getDate())) 
+                            ? ageInYears - 1 : ageInYears;
+
+        return adjustedAge;
+      },
+      toggleAgeFilter(filter) {
+        // Toggle filter: if same filter is clicked, turn it off; otherwise, set new filter
+        this.ageFilter = this.ageFilter === filter ? null : filter;
+      },
+      clearAgeFilter() {
+        this.ageFilter = null;
       }
     }
   }
@@ -1824,22 +1811,6 @@
   @keyframes fadeIn {
     0% { opacity: 0; }
     100% { opacity: 1; }
-  }
-
-  /* Sidebar slide animation */
-  .slide-enter-active,
-  .slide-leave-active {
-    transition: all 0.3s ease-in-out;
-  }
-
-  .slide-enter-from,
-  .slide-leave-to {
-    opacity: 0;
-  }
-
-  .slide-enter-from > div:first-child,
-  .slide-leave-to > div:first-child {
-    transform: translateX(-100%);
   }
 
   /* Scanning line animation */
@@ -1886,35 +1857,15 @@
     scrollbar-color: #3b82f6 #f1f5f9;
   }
 
-  /* Mobile-first responsive book grid */
-  .books-grid {
-    /* Default: 2 columns for small phones */
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  /* Tablet and up: 3 columns */
-  @media (min-width: 768px) {
-    .books-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
-  /* Desktop and up: 4 columns */
-  @media (min-width: 1024px) {
-    .books-grid {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-  }
-
-  /* Very small phones: ensure readability */
+  /* Make the books grid adapt for very small phones */
   @media (max-width: 360px) {
     .books-grid {
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 0.25rem;
+      gap: 0.5rem;
     }
-    
+    /* Slightly reduce cover height on tiny screens to avoid overly tall cards */
     .book-cover {
-      height: 10rem; /* 160px */
+      height: 12rem; /* 192px (h-48) */
     }
   }
 
@@ -1927,6 +1878,74 @@
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
     line-height: 1.15em; /* keep consistent spacing */
+  }
+
+  /* Glowing border button animation */
+  .glow-button {
+    position: relative;
+    animation: glow-pulse 2s ease-in-out infinite;
+  }
+
+  .glow-button::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
+    background-size: 300% 300%;
+    border-radius: 0.5rem;
+    z-index: -1;
+    opacity: 0.7;
+    filter: blur(8px);
+    animation: glow-rotate 3s linear infinite;
+  }
+
+  /* Active state with green glow */
+  .glow-button-active {
+    position: relative;
+    animation: glow-pulse-active 2s ease-in-out infinite;
+  }
+
+  .glow-button-active::before {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    background: linear-gradient(45deg, #10b981, #059669, #34d399, #10b981);
+    background-size: 300% 300%;
+    border-radius: 0.5rem;
+    z-index: -1;
+    opacity: 0.7;
+    filter: blur(8px);
+    animation: glow-rotate 3s linear infinite;
+  }
+
+  @keyframes glow-pulse {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5), 0 0 40px rgba(139, 92, 246, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(59, 130, 246, 0.8), 0 0 60px rgba(139, 92, 246, 0.5);
+    }
+  }
+
+  @keyframes glow-pulse-active {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(16, 185, 129, 0.5), 0 0 40px rgba(5, 150, 105, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(16, 185, 129, 0.8), 0 0 60px rgba(5, 150, 105, 0.5);
+    }
+  }
+
+  @keyframes glow-rotate {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 </style>
 

@@ -17,4 +17,21 @@ export default defineConfig({
             },
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['vue', '@inertiajs/vue3'],
+                    charts: ['chart.js'],
+                    qr: ['jsqr', 'qrcode.vue'],
+                },
+            },
+        },
+        chunkSizeWarningLimit: 1000,
+    },
+    server: {
+        hmr: {
+            host: 'localhost',
+        },
+    },
 });

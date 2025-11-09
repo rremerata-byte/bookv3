@@ -26,10 +26,20 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $appends = [
+        'course',
+    ];
+
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    // Accessor for course attribute (maps to courseSection)
+    public function getCourseAttribute()
+    {
+        return $this->courseSection;
+    }
 
     // Relationship with borrowed books could be added here if needed
     public function borrowedBooks()

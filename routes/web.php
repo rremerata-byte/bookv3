@@ -62,7 +62,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::patch('/book-requests/{id}/reject', [BookRequestController::class, 'reject'])->name('book-requests.reject');
     Route::delete('/books/{book}/reserve', [BookController::class, 'cancelReservation'])->name('reserve.destroy');
     Route::post('/books/{book}/return', [BookController::class, 'return'])->name('receipts.return');
-    Route::post('/books/{book}/return-reservation', [BookController::class, 'returnReservation'])->name('reserve.return');
 });
 
 

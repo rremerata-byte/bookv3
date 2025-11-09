@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Borrowing;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-use App\Services\SmsService;
 
 class BookRequestController extends Controller
 {
@@ -61,7 +60,6 @@ class BookRequestController extends Controller
     public function approve($id)
     {
         $request = BookRequest::with(['user', 'book'])->findOrFail($id);
-        $smsService = app(SmsService::class);
         
         DB::transaction(function () use ($request) {
             $request->update(['status' => 'approved']);
@@ -110,16 +108,6 @@ class BookRequestController extends Controller
                     'request_id' => $request->id,
                 ],
             ]);
-
-            // Send SMS notification
-            if ($request->user && $request->user->phone_number) {
-                $smsService->sendRequestApproved(
-                    $request->user->phone_number,
-                    optional($request->book)->title,
-                    $request->request_type,
-                    \Carbon\Carbon::parse($request->return_date)->format('M d, Y')
-                );
-            }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Notification create failed: ' . $e->getMessage());
         }

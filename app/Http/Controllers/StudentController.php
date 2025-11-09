@@ -21,6 +21,7 @@ class StudentController extends Controller
                 'bookId' => $book->bookId,  // ✅ ADDED THIS - Required for QR scanner!
                 'title' => $book->title,
                 'description' => $book->description,
+                'subject' => $book->subject_for,
                 'course' => $book->course,
                 'image_url' => $book->image_path ? Storage::url($book->image_path) : null,
                 'author' => $book->author,
