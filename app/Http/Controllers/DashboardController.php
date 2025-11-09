@@ -12,6 +12,7 @@ use Inertia\Inertia;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
 class DashboardController extends Controller
@@ -107,13 +108,15 @@ class DashboardController extends Controller
             $reserveYearly[] = isset($reserveYearRaw[$y]) ? (int)$reserveYearRaw[$y] : 0;
         }
 
-        $topBooks = Book::withCount(['borrowings'])
-            ->orderByDesc('borrowings_count')
+        // Get top 5 most borrowed books, grouping by title to avoid duplicates
+        $topBooks = Book::select('title', DB::raw('SUM((SELECT COUNT(*) FROM borrowings WHERE borrowings.book_id = books.id)) as total_count'))
+            ->groupBy('title')
+            ->orderByDesc('total_count')
             ->limit(5)
             ->get()
             ->map(fn($book) => [
                 'title' => $book->title,
-                'count' => $book->borrowings_count
+                'count' => (int)$book->total_count
             ]);
 
         // Top 5 users with most borrow/reserve actions (shared with AvailableBooks)

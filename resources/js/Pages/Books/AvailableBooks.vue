@@ -2,15 +2,21 @@
   <Layout>
     <div class="ml-64 p-8 flex-1 bg-gradient-to-br from-gray-50 to-gray-200 min-h-screen">
       <main class="p-6 bg-white shadow rounded-lg">
-        <!-- Search Bar -->
-        <div class="flex items-center bg-gray-100 p-4 rounded-lg shadow-inner mb-6">
-          <img src="/img/icon.png" class="w-6 h-6 mr-3 opacity-70" alt="Search Icon" />
-          <input
-            type="text"
-            v-model="searchQuery"
-            placeholder="Search by title, author, or course..."
-            class="w-full p-3 bg-transparent text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
-          />
+        <!-- Search Bar and Sort -->
+        <div class="flex flex-col md:flex-row gap-4 mb-6">
+          <!-- Search Bar -->
+          <div class="flex items-center bg-gray-100 p-4 rounded-lg shadow-inner flex-1">
+            <img src="/img/icon.png" class="w-6 h-6 mr-3 opacity-70" alt="Search Icon" />
+            <input
+              type="text"
+              v-model="searchQuery"
+              placeholder="Search by title, author, or course..."
+              class="w-full p-3 bg-transparent text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
+            />
+          </div>
+          
+          <!-- Sort Dropdown -->
+          
         </div>
 
         <!-- Add tabs for different views -->
@@ -25,51 +31,164 @@
             ]"
           >
             {{ tab.label }}
-            <span class="ml-2 bg-white text-blue-500 rounded-full px-2 py-1 text-xs">
+            <span v-if="tab.value !== 'history'" class="ml-2 bg-white text-blue-500 rounded-full px-2 py-1 text-xs">
               {{ getTabCount(tab.value) }}
             </span>
           </button>
         </div>
 
+        <!-- Color Legend Filter (only show in books tab) -->
+        <div v-if="activeTab === 'books'" class="mb-6 bg-white p-4 rounded-lg shadow-md border border-gray-200">
+          <h3 class="text-sm font-semibold text-gray-700 mb-3 flex items-center">
+            <i class="fas fa-filter mr-2 text-blue-500"></i>
+            📚 Book Age Color Guide:
+          </h3>
+          <div class="flex flex-wrap gap-3 text-sm">
+            <div v-if="activeTab === 'books'" class="flex items-center gap-2">
+            <label class="text-sm font-medium text-gray-700 whitespace-nowrap">
+              <i class="fas fa-sort mr-1"></i> Sort By:
+            </label>
+            <select 
+              v-model="sortBy"
+              class="px-4 py-3 bg-gray-100 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-700 text-sm min-w-[200px]"
+            >
+              <option value="title-asc">Title (A-Z)</option>
+              <option value="title-desc">Title (Z-A)</option>
+              <option value="author-asc">Author (A-Z)</option>
+              <option value="author-desc">Author (Z-A)</option>
+              <option value="course-asc">Course (A-Z)</option>
+              <option value="course-desc">Course (Z-A)</option>
+              <option value="amount-asc">Amount (Low to High)</option>
+              <option value="amount-desc">Amount (High to Low)</option>
+              <option value="date-newest">Date Acquired (Newest)</option>
+              <option value="date-oldest">Date Acquired (Oldest)</option>
+              <option value="age-newest">Book Age (Newest)</option>
+              <option value="age-oldest">Book Age (Oldest)</option>
+            </select>
+          </div>
+            <button
+              @click="filterByAge('green')"
+              type="button"
+              :class="[
+                'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+                selectedAgeFilter === 'green' ? 'bg-green-100 ring-2 ring-green-500' : 'hover:bg-gray-100'
+              ]"
+            >
+              <div class="w-6 h-6 border-4 border-green-500 rounded flex-shrink-0"></div>
+              <span class="text-gray-700">0-2 years (New)</span>
+            </button>
+            <button
+              @click="filterByAge('blue')"
+              type="button"
+              :class="[
+                'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+                selectedAgeFilter === 'blue' ? 'bg-blue-100 ring-2 ring-blue-500' : 'hover:bg-gray-100'
+              ]"
+            >
+              <div class="w-6 h-6 border-4 border-blue-500 rounded flex-shrink-0"></div>
+              <span class="text-gray-700">3-4 years</span>
+            </button>
+            <button
+              @click="filterByAge('yellow')"
+              type="button"
+              :class="[
+                'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+                selectedAgeFilter === 'yellow' ? 'bg-yellow-100 ring-2 ring-yellow-500' : 'hover:bg-gray-100'
+              ]"
+            >
+              <div class="w-6 h-6 border-4 border-yellow-500 rounded flex-shrink-0"></div>
+              <span class="text-gray-700">5-6 years</span>
+            </button>
+            <button
+              @click="filterByAge('orange')"
+              type="button"
+              :class="[
+                'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+                selectedAgeFilter === 'orange' ? 'bg-orange-100 ring-2 ring-orange-500' : 'hover:bg-gray-100'
+              ]"
+            >
+              <div class="w-6 h-6 border-4 border-orange-500 rounded flex-shrink-0"></div>
+              <span class="text-gray-700">7-9 years</span>
+            </button>
+            <button
+              @click="filterByAge('red')"
+              type="button"
+              :class="[
+                'flex items-center space-x-2 px-3 py-2 rounded-lg transition-all',
+                selectedAgeFilter === 'red' ? 'bg-red-100 ring-2 ring-red-500' : 'hover:bg-gray-100'
+              ]"
+            >
+              <div class="w-6 h-6 border-4 border-red-500 rounded flex-shrink-0"></div>
+              <span class="text-gray-700">10+ years (Old)</span>
+            </button>
+            <button
+              v-if="selectedAgeFilter"
+              @click="clearAgeFilter"
+              type="button"
+              class="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-200 hover:bg-gray-300 transition-all"
+            >
+              <i class="fas fa-times"></i>
+              <span class="text-gray-700 font-semibold">Clear Filter</span>
+            </button>
+            
+          </div>
+        </div>
+
         <!-- Books Table with enhanced status display -->
-        <table v-if="activeTab === 'books'" class="min-w-full">
-          <thead class="bg-blue-50 text-gray-600 text-sm uppercase tracking-wider">
+        <div v-if="activeTab === 'books'" class="overflow-x-auto shadow-md rounded-lg">
+        <table class="min-w-full bg-white">
+          <thead class="bg-gradient-to-r from-blue-500 to-blue-600 text-white text-sm uppercase tracking-wider">
             <tr>
-              <th class="px-4 py-2 text-left">Cover</th>
-              <th class="px-4 py-2 text-left">Title</th>
-              <th class="px-4 py-2 text-left">Author</th>
-              <th class="px-4 py-2 text-left">Course</th>
-              <th class="px-4 py-2 text-left">Book ID</th>
-              <th class="px-4 py-2 text-left">Availability</th>
-              <th class="px-4 py-2 text-center">QR Code</th>
-              <th class="px-4 py-2 text-center">Actions</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Cover</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Title</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Author</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Course</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Subject For</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Amount</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Date Acquired</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Book ID</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Availability</th>
+              <th class="px-6 py-3 text-center font-semibold whitespace-nowrap">QR Code</th>
+              <th class="px-6 py-3 text-center font-semibold whitespace-nowrap">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="book in filteredBooks" :key="book.id">
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="book in filteredBooks" :key="book.id" :style="{ borderLeft: '4px solid ' + getBookAgeBorderColorHex(book.publicationDate) }" class="hover:bg-gray-50 transition-colors">
               <!-- Book Cover -->
-              <td class="px-4 py-2">
+              <td class="px-6 py-4">
                 <img 
-                :src="book.image_url || '/img/default-book.jpg'" 
+                :src="book.image_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22120%22%3E%3Crect width=%22100%22 height=%22120%22 fill=%22%23e5e7eb%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%236b7280%22%3ENo Image%3C/text%3E%3C/svg%3E'" 
                 alt="Book Cover" 
-                  class="w-full h-20 object-cover"
+                  class="w-16 h-20 object-cover rounded shadow-sm"
                 />
               </td>
               <!-- Book Title -->
-              <td class="px-4 py-2">
-                <span class="text-gray-700 font-medium">{{ book.title }}</span>
+              <td class="px-6 py-4">
+                <span class="text-gray-900 font-medium">{{ book.title }}</span>
               </td>
               <!-- Book Author -->
-              <td class="px-4 py-2">{{ book.author }}</td>
+              <td class="px-6 py-4 text-gray-700">{{ book.author }}</td>
               <!-- Course -->
-              <td class="px-4 py-2">
-                <span class="text-gray-600">{{ book.course || 'N/A' }}</span>
+              <td class="px-6 py-4">
+                <span class="text-gray-700">{{ book.course || 'N/A' }}</span>
+              </td>
+              <!-- Subject For -->
+              <td class="px-6 py-4">
+                <span class="text-gray-700">{{ book.subject_for || 'N/A' }}</span>
+              </td>
+              <!-- Amount -->
+              <td class="px-6 py-4">
+                <span class="text-gray-900 font-semibold">{{ book.amount ? '₱' + Number(book.amount).toFixed(2) : 'N/A' }}</span>
+              </td>
+              <!-- Date Acquired -->
+              <td class="px-6 py-4">
+                <span class="text-gray-700">{{ book.dateAcquired ? formatDate(book.dateAcquired) : 'N/A' }}</span>
               </td>
               <!-- Book ID -->
-              <td class="px-4 py-2">{{ book.bookId }}</td>
+              <td class="px-6 py-4 text-gray-700">{{ book.bookId }}</td>
               <!-- Availability -->
-              <td class="px-4 py-2">
-                <div class="flex flex-col">
+              <td class="px-6 py-4">
+                <div class="flex flex-col space-y-1">
                   <span :class="getStatusClass(book.availability)">
                     {{ book.availability }}
                   </span>
@@ -86,165 +205,460 @@
                 </div>
               </td>
               <!-- QR Code Button -->
-              <td class="px-4 py-2 text-center">
+              <td class="px-6 py-4 text-center">
                 <button
                   @click="viewQrCode(book.id, book.title)"
-                  class="px-3 py-1 bg-purple-500 text-white rounded hover:bg-purple-600 transition"
+                  class="px-4 py-2 bg-purple-500 text-white rounded-lg hover:bg-purple-600 transition-colors shadow-sm"
                   title="View QR Code"
                 >
-                  <i class="fas fa-qrcode"></i>
+                  <i class="fas fa-qrcode mr-1"></i> QR
                 </button>
               </td>
               <!-- Actions -->
-              <td class="px-4 py-2 flex justify-center space-x-2">
+              <td class="px-6 py-4">
+                <div class="flex justify-center space-x-2">
                 <button
                   @click="updateBook(book)"
-                  class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition"
+                  class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow-sm"
                 >
-                  Edit
+                  <i class="fas fa-edit mr-1"></i> Edit
                 </button>
                 <button
                   @click="deleteBook(book.id)"
-                  class="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition"
+                  class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow-sm"
                 >
-                  Delete
+                  <i class="fas fa-trash mr-1"></i> Delete
                 </button>
+                </div>
               </td>
             </tr>
           </tbody>
         </table>
+        </div>
 
-        <table v-if="activeTab === 'borrowed'" class="min-w-full">
-          <thead class="bg-blue-50">
+        <div v-if="activeTab === 'borrowed'" class="overflow-x-auto shadow-md rounded-lg">
+        <table class="min-w-full bg-white">
+          <thead class="bg-gradient-to-r from-red-500 to-red-600 text-white text-sm uppercase tracking-wider">
             <tr>
-              <th class="px-4 py-2">Book</th>
-              <th class="px-4 py-2">Borrower</th>
-              <th class="px-4 py-2">Phone Number</th>
-              <th class="px-4 py-2">Due Date</th>
-              <th class="px-4 py-2">Actions</th>
+              <th class="px-6 py-4 text-left font-semibold">Book Title</th>
+              <th class="px-6 py-4 text-left font-semibold">Borrower Name</th>
+              <th class="px-6 py-4 text-left font-semibold">Phone Number</th>
+              <th class="px-6 py-4 text-left font-semibold">Due Date</th>
+              <th class="px-6 py-4 text-center font-semibold">Actions</th>
             </tr>
           </thead>
-          <tbody>
-            <tr v-for="book in borrowedBooks" :key="book.id">
-              <td class="px-4 py-2">{{ book.title }}</td>
-              <td class="px-4 py-2">{{ book.current_borrower?.fullname }}</td>
-              <td class="px-4 py-2">{{ book.current_borrower?.phone_number || 'N/A' }}</td>
-              <td class="px-4 py-2">{{ formatDate(book.current_borrower?.due_date) }}</td>
-              <td class="px-4 py-2">
-                <button @click="returnBook(book.id)" class="bg-green-500 text-white px-3 py-1 rounded">
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="book in borrowedBooks" :key="book.id" class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <span class="font-medium text-gray-900">{{ book.title }}</span>
+              </td>
+              <td class="px-6 py-4 text-gray-700">{{ book.current_borrower?.fullname || 'N/A' }}</td>
+              <td class="px-6 py-4 text-gray-700">
+                <div class="flex items-center">
+                  <i class="fas fa-phone text-gray-400 mr-2 text-sm"></i>
+                  {{ book.current_borrower?.phone_number || 'N/A' }}
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800">
+                  <i class="fas fa-calendar-alt mr-2"></i>
+                  {{ formatDate(book.current_borrower?.due_date) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <button 
+                  @click="returnBook(book.id)" 
+                  class="inline-flex items-center px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-all shadow-sm hover:shadow-md"
+                >
+                  <i class="fas fa-undo mr-2"></i>
+                  Return Book
+                </button>
+              </td>
+            </tr>
+            <tr v-if="borrowedBooks.length === 0">
+              <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                <i class="fas fa-inbox text-4xl mb-2"></i>
+                <p>No borrowed books at the moment</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        </div>
+
+        <!-- Reserved Books Table -->
+        <div v-if="activeTab === 'reserved'" class="overflow-x-auto shadow-md rounded-lg">
+        <table class="min-w-full bg-white">
+          <thead class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white text-sm uppercase tracking-wider">
+            <tr>
+              <th class="px-6 py-4 text-left font-semibold">Book Title</th>
+              <th class="px-6 py-4 text-left font-semibold">Reserved By</th>
+              <th class="px-6 py-4 text-left font-semibold">Phone Number</th>
+              <th class="px-6 py-4 text-left font-semibold">Until Date</th>
+              <th class="px-6 py-4 text-center font-semibold">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-200">
+            <tr v-for="book in reservedBooks" :key="book.id" class="hover:bg-gray-50 transition-colors">
+              <td class="px-6 py-4">
+                <span class="font-medium text-gray-900">{{ book.title }}</span>
+              </td>
+              <td class="px-6 py-4 text-gray-700">{{ book.current_reserver?.fullname || 'N/A' }}</td>
+              <td class="px-6 py-4 text-gray-700">
+                <div class="flex items-center">
+                  <i class="fas fa-phone text-gray-400 mr-2 text-sm"></i>
+                  {{ book.current_reserver?.phone_number || 'N/A' }}
+                </div>
+              </td>
+              <td class="px-6 py-4">
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm bg-yellow-100 text-yellow-800">
+                  <i class="fas fa-calendar-check mr-2"></i>
+                  {{ formatDate(book.current_reserver?.until_date) }}
+                </span>
+              </td>
+              <td class="px-6 py-4 text-center">
+                <button 
+                  @click="returnReservation(book.id)" 
+                  class="inline-flex items-center px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-all shadow-sm hover:shadow-md"
+                >
+                  <i class="fas fa-undo mr-2"></i>
                   Return
                 </button>
               </td>
             </tr>
-          </tbody>
-        </table>
-
-        <!-- Reserved Books Table -->
-        <table v-if="activeTab === 'reserved'" class="min-w-full">
-          <thead class="bg-blue-50">
-            <tr>
-              <th class="px-4 py-2">Book</th>
-              <th class="px-4 py-2">Reserved By</th>
-              <th class="px-4 py-2">Phone Number</th>
-              <th class="px-4 py-2">Until Date</th>
-              <th class="px-4 py-2">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="book in reservedBooks" :key="book.id">
-              <td class="px-4 py-2">{{ book.title }}</td>
-              <td class="px-4 py-2">{{ book.current_reserver?.fullname }}</td>
-              <td class="px-4 py-2">{{ book.current_reserver?.phone_number || 'N/A' }}</td>
-              <td class="px-4 py-2">{{ formatDate(book.current_reserver?.until_date) }}</td>
-              <td class="px-4 py-2">
-                <button @click="cancelReservation(book.id)" class="bg-red-500 text-white px-3 py-1 rounded">
-                  Cancel
-                </button>
+            <tr v-if="reservedBooks.length === 0">
+              <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                <i class="fas fa-inbox text-4xl mb-2"></i>
+                <p>No reserved books at the moment</p>
               </td>
             </tr>
           </tbody>
         </table>
+        </div>
 
         <!-- Requests Table -->
         <template v-if="activeTab === 'requests'">
-          <!-- Pending Requests Table -->
-          <h3 class="text-lg font-semibold mb-4">Pending Requests</h3>
-          <table class="min-w-full mb-8">
-            <thead class="bg-blue-50">
-              <tr>
-                <th class="px-4 py-2">Book</th>
-                <th class="px-4 py-2">Requester</th>
-                <th class="px-4 py-2">Type</th>
-                <th class="px-4 py-2">Start Date</th>
-                <th class="px-4 py-2">End Date</th>
-                <th class="px-4 py-2">Status</th>
-                <th class="px-4 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="request in pendingRequests" :key="request.id">
-                <td class="px-4 py-2">{{ request.book.title }}</td>
-                <td class="px-4 py-2">{{ request.user.fullname }}</td>
-                <td class="px-4 py-2 capitalize">{{ request.request_type }}</td>
-                <td class="px-4 py-2">{{ formatDate(request.request_date) }}</td>
-                <td class="px-4 py-2">{{ formatDate(request.return_date) }}</td>
-                <td class="px-4 py-2">
-                  <span :class="{
-                    'text-yellow-600': request.status === 'pending',
-                    'text-green-600': request.status === 'approved',
-                    'text-red-600': request.status === 'rejected'
-                  }">
-                    {{ request.status }}
-                  </span>
-                </td>
-                <td class="px-4 py-2 space-x-2">
-                  <button 
-                    @click="approveRequest(request.id)" 
-                    class="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                  >
-                    Approve
-                  </button>
-                  <button 
-                    @click="rejectRequest(request.id)" 
-                    class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
-                  >
-                    Reject
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <!-- Pending Requests -->
+          <div class="mb-8">
+            <h3 class="text-lg font-semibold mb-4">Pending Requests ({{ pendingRequests.length }})</h3>
+            <table class="min-w-full bg-white border">
+              <thead class="bg-blue-50">
+                <tr>
+                  <th class="px-4 py-2 text-left">Book</th>
+                  <th class="px-4 py-2 text-left">Requester</th>
+                  <th class="px-4 py-2 text-left">Type</th>
+                  <th class="px-4 py-2 text-left">Start Date</th>
+                  <th class="px-4 py-2 text-left">Return Date</th>
+                  <th class="px-4 py-2 text-left">Status</th>
+                  <th class="px-4 py-2 text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="request in pendingRequests" :key="request.id" class="border-t">
+                  <td class="px-4 py-2">{{ request.book.title }}</td>
+                  <td class="px-4 py-2">{{ request.user.fullname }}</td>
+                  <td class="px-4 py-2 capitalize">{{ request.request_type }}</td>
+                  <td class="px-4 py-2">{{ formatDate(request.request_date) }}</td>
+                  <td class="px-4 py-2">{{ formatDate(request.return_date) }}</td>
+                  <td class="px-4 py-2">
+                    <span class="text-yellow-600">{{ request.status }}</span>
+                  </td>
+                  <td class="px-4 py-2 text-center">
+                    <div class="flex justify-center space-x-2">
+                      <button 
+                        @click="approveRequest(request.id)" 
+                        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 transition"
+                      >
+                        Approve
+                      </button>
+                      <button 
+                        @click="rejectRequest(request.id)" 
+                        class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                      >
+                        Reject
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                <tr v-if="pendingRequests.length === 0">
+                  <td colspan="7" class="px-4 py-4 text-center text-gray-500">No pending requests</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </template>
 
-          <!-- Rejected Requests Table -->
-          <h3 class="text-lg font-semibold mb-4 mt-[20vh]">History</h3>
-          <table class="min-w-full">
-            <thead class="bg-blue-50">
-              <tr>
-                <th class="px-4 py-2">Book</th>
-                <th class="px-4 py-2">Requester</th>
-                <th class="px-4 py-2">Type</th>
-                <th class="px-4 py-2">Date</th>
-                <th class="px-4 py-2">Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="request in historyRequests" :key="request.id">
-                <td class="px-4 py-2">{{ request.book.title }}</td>
-                <td class="px-4 py-2">{{ request.user.fullname }}</td>
-                <td class="px-4 py-2">{{ request.request_type }}</td>
-                <td class="px-4 py-2">{{ formatDate(request.request_date) }}</td>
-                <td class="px-4 py-2">{{ request.status }}</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- History Tab -->
+        <template v-if="activeTab === 'history'">
+          <div>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-4">
+              <h3 class="text-lg font-semibold">
+                <i class="fas fa-history text-indigo-600 mr-2"></i>
+                History 
+                <span class="text-sm text-gray-500 font-normal">({{ historyRequests.length }} total)</span>
+              </h3>
+              
+              <!-- Download Buttons -->
+              <div class="flex gap-2">
+                <button 
+                  @click="downloadReport"
+                  class="px-4 py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg hover:from-green-600 hover:to-green-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm font-semibold"
+                >
+                  <i class="fas fa-file-csv"></i>
+                  Download CSV
+                </button>
+                <button 
+                  @click="downloadAsPNG"
+                  class="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2 text-sm font-semibold"
+                >
+                  <i class="fas fa-image"></i>
+                  Download PNG
+                </button>
+              </div>
+            </div>
 
-          
+            <!-- Search and Filter Row -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
+              <!-- Search Input -->
+              <input 
+                v-model="historySearchQuery"
+                type="text" 
+                placeholder="Search by book, user, type..." 
+                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
+              />
+              
+              <!-- Request Status Filter -->
+              <select 
+                v-model="historyStatusFilter"
+                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
+              >
+                <option value="all">All Request Status</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+
+              <!-- Return Status Filter -->
+              <select 
+                v-model="historyReturnFilter"
+                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
+              >
+                <option value="all">All Return Status</option>
+                <option value="returned">Returned</option>
+                <option value="not-returned">Not Returned Yet</option>
+              </select>
+
+              <!-- Single Date Filter -->
+              <div class="relative">
+                <input 
+                  v-model="historyDate"
+                  type="date" 
+                  placeholder="Select Date"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
+                />
+              </div>
+            </div>
+
+            <!-- Clear Filters Button -->
+            <div class="mb-4">
+              <button 
+                @click="clearHistoryFilters"
+                class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium flex items-center gap-2"
+              >
+                <i class="fas fa-times-circle"></i>
+                Clear Filters
+              </button>
+            </div>
+
+            <!-- History Report Container for PNG Export -->
+            <div id="history-report-container" class="bg-white p-6 rounded-lg">
+              <!-- Report Header -->
+              <div class="mb-6 text-center border-b pb-4">
+                <h2 class="text-2xl font-bold text-gray-800">Book Request History Report</h2>
+                <p class="text-sm text-gray-600 mt-1">Generated on {{ new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
+                <p v-if="historyDate" class="text-sm text-blue-600 font-medium mt-1">
+                  Date: {{ formatDisplayDate(historyDate) }}
+                </p>
+              </div>
+
+            <div class="overflow-x-auto shadow-md rounded-lg">
+              <table class="min-w-full bg-white border border-gray-200">
+                <thead class="bg-gradient-to-r from-indigo-50 to-purple-50">
+                  <tr>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <i class="fas fa-book mr-1"></i>Book
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <i class="fas fa-user mr-1"></i>Requester
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <i class="fas fa-tag mr-1"></i>Type
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <i class="fas fa-calendar mr-1"></i>Request Date
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <i class="fas fa-check-circle mr-1"></i>Request Status
+                    </th>
+                    <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">
+                      <i class="fas fa-undo mr-1"></i>Return Status
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                  <tr v-for="request in filteredHistoryRequests" :key="request.id" class="hover:bg-gray-50 transition-colors">
+                    <td class="px-4 py-3">
+                      <div class="flex items-center">
+                        <i class="fas fa-book-open text-indigo-500 mr-2"></i>
+                        <span class="font-medium text-gray-900">{{ request.book.title }}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <div class="flex items-center">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm mr-2">
+                          {{ request.user.fullname.charAt(0).toUpperCase() }}
+                        </div>
+                        <span class="text-gray-800">{{ request.user.fullname }}</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span :class="{
+                        'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center': request.request_type === 'borrow',
+                        'bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center': request.request_type === 'reserve'
+                      }">
+                        <i :class="request.request_type === 'borrow' ? 'fas fa-book mr-1' : 'fas fa-bookmark mr-1'"></i>
+                        {{ request.request_type }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3 text-gray-600 text-sm">
+                      <i class="far fa-calendar-alt mr-1 text-gray-400"></i>
+                      {{ formatDate(request.request_date) }}
+                    </td>
+                    <td class="px-4 py-3">
+                      <span :class="{
+                        'bg-green-100 text-green-800 px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center': request.status === 'approved' || request.status === 'returned',
+                        'bg-red-100 text-red-800 px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center': request.status === 'rejected'
+                      }">
+                        <i :class="{
+                          'fas fa-check-circle mr-1': request.status === 'approved' || request.status === 'returned',
+                          'fas fa-times-circle mr-1': request.status === 'rejected'
+                        }"></i>
+                        {{ request.status === 'returned' ? 'Approved' : (request.status.charAt(0).toUpperCase() + request.status.slice(1)) }}
+                      </span>
+                    </td>
+                    <td class="px-4 py-3">
+                      <span v-if="request.status !== 'rejected'" :class="{
+                        'bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center': request.status === 'returned',
+                        'bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-xs font-semibold inline-flex items-center': request.status === 'approved'
+                      }">
+                        <i :class="{
+                          'fas fa-check-double mr-1': request.status === 'returned',
+                          'fas fa-clock mr-1': request.status === 'approved'
+                        }"></i>
+                        {{ request.status === 'returned' ? 'Returned' : 'Not Returned Yet' }}
+                      </span>
+                      <span v-else class="text-gray-400 text-xs italic">N/A</span>
+                    </td>
+                  </tr>
+                  <tr v-if="filteredHistoryRequests.length === 0">
+                    <td colspan="6" class="px-4 py-8 text-center">
+                      <i class="fas fa-inbox text-gray-300 text-4xl mb-2"></i>
+                      <p class="text-gray-500 font-medium">
+                        {{ historySearchQuery || historyStatusFilter !== 'all' ? 'No matching history found' : 'No history yet' }}
+                      </p>
+                      <p class="text-gray-400 text-sm mt-1">
+                        {{ historySearchQuery || historyStatusFilter !== 'all' ? 'Try adjusting your search or filter' : 'Completed requests will appear here' }}
+                      </p>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Summary Stats -->
+            <div v-if="historyRequests.length > 0" class="mt-4">
+              <!-- Date Info -->
+              <div v-if="historyDate" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm font-medium text-blue-800">
+                  <i class="fas fa-calendar-day mr-2"></i>
+                  Showing results for {{ formatDisplayDate(historyDate) }}
+                  <span class="ml-2 text-blue-600 font-semibold">({{ filteredHistoryRequests.length }} records)</span>
+                </p>
+              </div>
+
+              <!-- Stats Grid -->
+              <div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-7 gap-3">
+                <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-green-600 font-semibold uppercase">Approved</p>
+                      <p class="text-2xl font-bold text-green-700">{{ approvedCount }}</p>
+                    </div>
+                    <i class="fas fa-check-circle text-green-400 text-2xl"></i>
+                  </div>
+                </div>
+                <div class="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-red-600 font-semibold uppercase">Rejected</p>
+                      <p class="text-2xl font-bold text-red-700">{{ rejectedCount }}</p>
+                    </div>
+                    <i class="fas fa-times-circle text-red-400 text-2xl"></i>
+                  </div>
+                </div>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-blue-600 font-semibold uppercase">Returned</p>
+                      <p class="text-2xl font-bold text-blue-700">{{ returnedCount }}</p>
+                    </div>
+                    <i class="fas fa-check-double text-blue-400 text-2xl"></i>
+                  </div>
+                </div>
+                <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-orange-600 font-semibold uppercase">Not Returned</p>
+                      <p class="text-2xl font-bold text-orange-700">{{ notReturnedCount }}</p>
+                    </div>
+                    <i class="fas fa-clock text-orange-400 text-2xl"></i>
+                  </div>
+                </div>
+                <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-purple-600 font-semibold uppercase">Borrowed</p>
+                      <p class="text-2xl font-bold text-purple-700">{{ borrowedRequestsCount }}</p>
+                    </div>
+                    <i class="fas fa-book text-purple-400 text-2xl"></i>
+                  </div>
+                </div>
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-yellow-600 font-semibold uppercase">Reserved</p>
+                      <p class="text-2xl font-bold text-yellow-700">{{ reservedRequestsCount }}</p>
+                    </div>
+                    <i class="fas fa-bookmark text-yellow-400 text-2xl"></i>
+                  </div>
+                </div>
+                <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-3">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-xs text-indigo-600 font-semibold uppercase">Total</p>
+                      <p class="text-2xl font-bold text-indigo-700">{{ filteredHistoryRequests.length }}</p>
+                    </div>
+                    <i class="fas fa-list text-indigo-400 text-2xl"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            </div> <!-- Close history-report-container -->
+          </div> <!-- Close history section -->
         </template>
 
         <!-- Modal -->
-        <div v-if="showModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50" @click.self="closeModal">
-          <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h3 class="text-xl font-semibold text-gray-700 mb-4">Edit Book Details</h3>
+        <div v-if="showModal" class="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50 z-50 p-4" @click.self="closeModal">
+          <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <h3 class="text-xl font-semibold text-gray-700 mb-4 sticky top-0 bg-white pb-2 border-b">Edit Book Details</h3>
             
             <!-- Title -->
             <div class="mb-4">
@@ -280,6 +694,43 @@
               />
             </div>
 
+            <!-- Subject For -->
+            <div class="mb-4">
+              <label for="editSubjectFor" class="block text-sm font-medium text-gray-600">Subject For:</label>
+              <input
+                type="text"
+                v-model="editBookData.subject_for"
+                id="editSubjectFor"
+                placeholder="e.g., Mathematics, Programming"
+                class="mt-1 p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <!-- Amount -->
+            <div class="mb-4">
+              <label for="editAmount" class="block text-sm font-medium text-gray-600">Amount (Cost):</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                v-model="editBookData.amount"
+                id="editAmount"
+                placeholder="0.00"
+                class="mt-1 p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <!-- Date Acquired -->
+            <div class="mb-4">
+              <label for="editDateAcquired" class="block text-sm font-medium text-gray-600">Date Acquired:</label>
+              <input
+                type="date"
+                v-model="editBookData.dateAcquired"
+                id="editDateAcquired"
+                class="mt-1 p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
             <!-- Availability -->
             <div class="mb-4">
               <label for="availabilitySelect" class="block text-sm font-medium text-gray-600">Availability:</label>
@@ -299,7 +750,7 @@
             <div class="mb-4">
               <label class="block text-sm font-medium text-gray-600">Current Cover:</label>
               <img 
-                :src="editBookData.image_url || '/img/default-book.jpg'" 
+                :src="editBookData.image_url || 'data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22120%22%3E%3Crect width=%22100%22 height=%22120%22 fill=%22%23e5e7eb%22/%3E%3Ctext x=%2250%25%22 y=%2250%25%22 dominant-baseline=%22middle%22 text-anchor=%22middle%22 font-family=%22Arial%22 font-size=%2214%22 fill=%22%236b7280%22%3ENo Image%3C/text%3E%3C/svg%3E'" 
                 alt="Current Book Cover" 
                 class="h-20 object-cover rounded mt-2"
               />
@@ -320,7 +771,7 @@
             </div>
 
             <!-- Buttons -->
-            <div class="flex justify-between mt-6 space-x-4">
+            <div class="flex justify-between mt-6 space-x-4 sticky bottom-0 bg-white pt-4 border-t">
               <button
                 @click="saveBook"
                 class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition w-full"
@@ -380,6 +831,7 @@
   import { Link } from '@inertiajs/vue3';
   import Layout from '../../Layouts/FrontEndLayout.vue';
   import Modal from '../../Components/Modal.vue';
+  import html2canvas from 'html2canvas';
 
 export default {
   components: {
@@ -395,6 +847,12 @@ export default {
     return {
       activeTab: 'books',
       searchQuery: '',
+      sortBy: 'title-asc', // Default sort
+      selectedAgeFilter: null, // null, 'green', 'blue', 'yellow', 'orange', 'red'
+      historySearchQuery: '', // Search for history
+      historyStatusFilter: 'all', // 'all', 'approved', 'rejected'
+      historyReturnFilter: 'all', // 'all', 'returned', 'not-returned'
+      historyDate: '', // Single date filter for specific day
       showModal: false,
       showQrModal: false,
       qrCodeSvg: null,
@@ -405,6 +863,9 @@ export default {
         title: '',
         author: '',
         course: '',
+        subject_for: '',
+        amount: '',
+        dateAcquired: '',
         availability: 'Available',
         availabilityDate: '',
         image_url: null
@@ -413,7 +874,8 @@ export default {
         { label: 'All Books', value: 'books' },
         { label: 'Requests', value: 'requests' },
         { label: 'Borrowed', value: 'borrowed' },
-        { label: 'Reserved', value: 'reserved' }
+        { label: 'Reserved', value: 'reserved' },
+        { label: 'History', value: 'history' }
       ],
       requestForm: {
         type: 'borrow',
@@ -425,11 +887,63 @@ export default {
   },
   computed: {
     filteredBooks() {
-      return this.books.filter(book => {
+      let books = this.books.filter(book => {
         return book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
                book.author.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
                (book.course && book.course.toLowerCase().includes(this.searchQuery.toLowerCase()));
       });
+
+      // Apply age filter if selected
+      if (this.selectedAgeFilter) {
+        books = books.filter(book => {
+          const color = this.getBookAgeColorName(book.publicationDate);
+          return color === this.selectedAgeFilter;
+        });
+      }
+
+      // Apply sorting
+      const [field, order] = this.sortBy.split('-');
+      
+      books.sort((a, b) => {
+        let aValue, bValue;
+        
+        switch(field) {
+          case 'title':
+            aValue = a.title.toLowerCase();
+            bValue = b.title.toLowerCase();
+            break;
+          case 'author':
+            aValue = a.author.toLowerCase();
+            bValue = b.author.toLowerCase();
+            break;
+          case 'course':
+            aValue = (a.course || '').toLowerCase();
+            bValue = (b.course || '').toLowerCase();
+            break;
+          case 'amount':
+            aValue = parseFloat(a.amount) || 0;
+            bValue = parseFloat(b.amount) || 0;
+            break;
+          case 'date':
+            aValue = a.dateAcquired ? new Date(a.dateAcquired).getTime() : 0;
+            bValue = b.dateAcquired ? new Date(b.dateAcquired).getTime() : 0;
+            break;
+          case 'age':
+            aValue = a.publicationDate ? new Date(a.publicationDate).getTime() : 0;
+            bValue = b.publicationDate ? new Date(b.publicationDate).getTime() : 0;
+            break;
+          default:
+            return 0;
+        }
+        
+        if (order === 'asc' || order === 'oldest') {
+          return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+        } else {
+          return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+        }
+      });
+
+      return books;
     },
     borrowedBooks() {
       return this.books.filter(book => book.availability === 'Borrowed');
@@ -442,7 +956,90 @@ export default {
     },
 
     historyRequests() {
-      return this.bookRequests.filter(request => request.status === 'rejected' || request.status === 'approved');
+      return this.bookRequests.filter(request => 
+        request.status === 'rejected' || 
+        request.status === 'approved' || 
+        request.status === 'returned'
+      );
+    },
+    
+    filteredHistoryRequests() {
+      let filtered = this.historyRequests;
+
+      // Apply search filter
+      if (this.historySearchQuery) {
+        const query = this.historySearchQuery.toLowerCase();
+        filtered = filtered.filter(request => {
+          return (
+            request.book.title.toLowerCase().includes(query) ||
+            request.user.fullname.toLowerCase().includes(query) ||
+            request.request_type.toLowerCase().includes(query)
+          );
+        });
+      }
+
+      // Apply request status filter (approved/rejected only)
+      if (this.historyStatusFilter !== 'all') {
+        if (this.historyStatusFilter === 'approved') {
+          // Show both approved and returned (returned items were approved first)
+          filtered = filtered.filter(request => request.status === 'approved' || request.status === 'returned');
+        } else if (this.historyStatusFilter === 'rejected') {
+          filtered = filtered.filter(request => request.status === 'rejected');
+        }
+      }
+
+      // Apply return status filter (returned/not-returned only)
+      if (this.historyReturnFilter !== 'all') {
+        if (this.historyReturnFilter === 'returned') {
+          filtered = filtered.filter(request => request.status === 'returned');
+        } else if (this.historyReturnFilter === 'not-returned') {
+          // Not returned = approved but not yet returned (excludes rejected)
+          filtered = filtered.filter(request => request.status === 'approved');
+        }
+      }
+
+      // Apply single date filter - show only records from that specific day
+      if (this.historyDate) {
+        const selectedDate = new Date(this.historyDate);
+        selectedDate.setHours(0, 0, 0, 0);
+        
+        const nextDay = new Date(selectedDate);
+        nextDay.setDate(nextDay.getDate() + 1);
+        
+        filtered = filtered.filter(request => {
+          const requestDate = new Date(request.request_date);
+          requestDate.setHours(0, 0, 0, 0);
+          return requestDate.getTime() === selectedDate.getTime();
+        });
+      }
+
+      return filtered;
+    },
+
+    approvedCount() {
+      // Count both approved and returned (since returned items were approved)
+      return this.filteredHistoryRequests.filter(r => r.status === 'approved' || r.status === 'returned').length;
+    },
+
+    rejectedCount() {
+      return this.filteredHistoryRequests.filter(r => r.status === 'rejected').length;
+    },
+
+    returnedCount() {
+      return this.filteredHistoryRequests.filter(r => r.status === 'returned').length;
+    },
+
+    notReturnedCount() {
+      // Only approved but not yet returned
+      return this.filteredHistoryRequests.filter(r => r.status === 'approved').length;
+    },
+
+    borrowedRequestsCount() {
+      return this.filteredHistoryRequests.filter(r => r.request_type === 'borrow').length;
+    },
+
+    reservedRequestsCount() {
+      return this.filteredHistoryRequests.filter(r => r.request_type === 'reserve').length;
     }
   },
 
@@ -465,6 +1062,9 @@ export default {
         case 'requests': 
           // Return only pending requests count (do not include history)
           return Array.isArray(this.pendingRequests) ? this.pendingRequests.length : 0;
+        case 'history':
+          // Return count of all history items (approved, rejected, returned)
+          return Array.isArray(this.historyRequests) ? this.historyRequests.length : 0;
         default:
           return 0;
       }
@@ -492,6 +1092,13 @@ export default {
       });
     },
     
+    returnReservation(bookId) {
+      this.$inertia.post(route('reserve.return', bookId), {
+        action_type: 'return',
+        return_date: new Date().toISOString(),
+      });
+    },
+    
     cancelReservation(bookId) {
       this.$inertia.delete(route('reserve.destroy', bookId), {
         data: {
@@ -503,7 +1110,11 @@ export default {
     
     formatDate(date) {
       if (!date) return '';
-      return new Date(date).toLocaleDateString();
+      const d = new Date(date);
+      const month = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const year = d.getFullYear();
+      return `${month}/${day}/${year}`;
     },
     updateBook(book) {
       this.editBookData = {
@@ -511,11 +1122,30 @@ export default {
         title: book.title,
         author: book.author,
         course: book.course || '',
+        subject_for: book.subject_for || '',
+        amount: book.amount || '',
+        dateAcquired: book.dateAcquired || '',
         availability: book.availability || 'Available',
         availabilityDate: book.availabilityDate || '',
         image_url: book.image_url, // Include the current image URL
       };
       this.showModal = true;
+    },
+    deleteBook(bookId) {
+      if (!confirm('Are you sure you want to delete this book? This action cannot be undone.')) {
+        return;
+      }
+      
+      this.$inertia.delete(route('books.destroy', bookId), {
+        preserveScroll: true,
+        onSuccess: () => {
+          alert('Book deleted successfully');
+        },
+        onError: (errors) => {
+          console.error('Delete error:', errors);
+          alert('Failed to delete book. Please try again.');
+        }
+      });
     },
     saveBook() {
       const formData = new FormData();
@@ -523,6 +1153,9 @@ export default {
       formData.append('title', this.editBookData.title);
       formData.append('author', this.editBookData.author);
       formData.append('course', this.editBookData.course);
+      formData.append('subject_for', this.editBookData.subject_for || '');
+      formData.append('amount', this.editBookData.amount || '');
+      formData.append('dateAcquired', this.editBookData.dateAcquired || '');
       formData.append('availability', this.editBookData.availability);
       
       if (this.editBookData.image_url instanceof File) {
@@ -551,6 +1184,9 @@ export default {
         title: '',
         author: '',
         course: '',
+        subject_for: '',
+        amount: '',
+        dateAcquired: '',
         availability: 'Available',
         availabilityDate: '',
         image_url: null
@@ -709,6 +1345,193 @@ export default {
       } catch (error) {
         console.error('Error downloading QR code:', error);
         alert('Failed to download QR code');
+      }
+    },
+
+    // Book age color methods
+    getBookAgeBorderColorHex(publicationDate) {
+      if (!publicationDate) return '#D1D5DB'; // gray-300
+      
+      const pubDate = new Date(publicationDate);
+      const currentDate = new Date();
+      const yearsDiff = currentDate.getFullYear() - pubDate.getFullYear();
+      
+      // Green: 0-2 years
+      if (yearsDiff >= 0 && yearsDiff <= 2) return '#10B981'; // green-500
+      // Blue: 3-4 years
+      if (yearsDiff >= 3 && yearsDiff <= 4) return '#3B82F6'; // blue-500
+      // Yellow: 5-6 years
+      if (yearsDiff >= 5 && yearsDiff <= 6) return '#EAB308'; // yellow-500
+      // Orange: 7-9 years
+      if (yearsDiff >= 7 && yearsDiff <= 9) return '#F97316'; // orange-500
+      // Red: 10+ years
+      if (yearsDiff >= 10) return '#EF4444'; // red-500
+      
+      return '#D1D5DB'; // gray-300
+    },
+
+    getBookAgeColorName(publicationDate) {
+      if (!publicationDate) return null;
+      
+      const pubDate = new Date(publicationDate);
+      const currentDate = new Date();
+      const yearsDiff = currentDate.getFullYear() - pubDate.getFullYear();
+      
+      // Green: 0-2 years
+      if (yearsDiff >= 0 && yearsDiff <= 2) return 'green';
+      // Blue: 3-4 years
+      if (yearsDiff >= 3 && yearsDiff <= 4) return 'blue';
+      // Yellow: 5-6 years
+      if (yearsDiff >= 5 && yearsDiff <= 6) return 'yellow';
+      // Orange: 7-9 years
+      if (yearsDiff >= 7 && yearsDiff <= 9) return 'orange';
+      // Red: 10+ years
+      if (yearsDiff >= 10) return 'red';
+      
+      return null;
+    },
+
+    filterByAge(color) {
+      if (this.selectedAgeFilter === color) {
+        // If clicking the same filter, clear it
+        this.selectedAgeFilter = null;
+      } else {
+        this.selectedAgeFilter = color;
+      }
+    },
+
+    clearAgeFilter() {
+      this.selectedAgeFilter = null;
+    },
+
+    clearHistoryFilters() {
+      this.historySearchQuery = '';
+      this.historyStatusFilter = 'all';
+      this.historyReturnFilter = 'all';
+      this.historyDate = '';
+    },
+
+    formatDisplayDate(dateString) {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      return date.toLocaleDateString('en-US', options);
+    },
+
+    downloadReport() {
+      if (this.filteredHistoryRequests.length === 0) {
+        alert('No data to download. Please adjust your filters.');
+        return;
+      }
+
+      // Prepare CSV data
+      const headers = ['Book Title', 'Author', 'Requester', 'Email', 'Request Type', 'Request Date', 'Status'];
+      const rows = this.filteredHistoryRequests.map(request => [
+        request.book.title,
+        request.book.author,
+        request.user.fullname,
+        request.user.email,
+        request.request_type.charAt(0).toUpperCase() + request.request_type.slice(1),
+        this.formatDate(request.request_date),
+        request.status.charAt(0).toUpperCase() + request.status.slice(1)
+      ]);
+
+      // Add summary section
+      const summaryRows = [
+        [],
+        ['SUMMARY STATISTICS'],
+        ['Total Records', this.filteredHistoryRequests.length],
+        ['Approved', this.approvedCount],
+        ['Rejected', this.rejectedCount],
+        ['Returned', this.returnedCount],
+        ['Borrowed Requests', this.borrowedRequestsCount],
+        ['Reserved Requests', this.reservedRequestsCount],
+        [],
+        ['Report Generated', new Date().toLocaleString()],
+      ];
+
+      // Add date info if filter is applied
+      if (this.historyDate) {
+        summaryRows.splice(1, 0, ['Date', this.formatDisplayDate(this.historyDate)]);
+      }
+
+      // Convert to CSV format
+      const csvContent = [
+        headers.join(','),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(',')),
+        ...summaryRows.map(row => row.map(cell => `"${cell}"`).join(','))
+      ].join('\n');
+
+      // Create blob and download
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      
+      // Generate filename with date
+      let filename = 'book_requests_report';
+      if (this.historyDate) {
+        filename += `_${this.historyDate.replace(/-/g, '')}`;
+      } else {
+        filename += `_${new Date().toISOString().split('T')[0].replace(/-/g, '')}`;
+      }
+      filename += '.csv';
+
+      link.setAttribute('href', url);
+      link.setAttribute('download', filename);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    },
+
+    async downloadAsPNG() {
+      if (this.filteredHistoryRequests.length === 0) {
+        alert('No data to download. Please adjust your filters.');
+        return;
+      }
+
+      try {
+        const element = document.getElementById('history-report-container');
+        if (!element) {
+          alert('Report container not found');
+          return;
+        }
+
+        // Capture the element as canvas
+        const canvas = await html2canvas(element, {
+          backgroundColor: '#ffffff',
+          scale: 2, // Higher quality
+          logging: false,
+          useCORS: true,
+          allowTaint: true
+        });
+
+        // Convert canvas to blob
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          
+          // Generate filename
+          let filename = 'book_requests_report';
+          if (this.historyDate) {
+            filename += `_${this.historyDate.replace(/-/g, '')}`;
+          } else {
+            filename += `_${new Date().toISOString().split('T')[0].replace(/-/g, '')}`;
+          }
+          filename += '.png';
+          
+          link.href = url;
+          link.download = filename;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+        
+      } catch (error) {
+        console.error('Error generating PNG:', error);
+        alert('Failed to generate PNG. Please try again.');
       }
     }
   }

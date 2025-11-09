@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Borrowing;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
+use App\Services\SmsService;
 
 class BookRequestController extends Controller
 {
@@ -59,19 +60,28 @@ class BookRequestController extends Controller
 
     public function approve($id)
     {
-        $request = BookRequest::findOrFail($id);
+        $request = BookRequest::with(['user', 'book'])->findOrFail($id);
+        $smsService = app(SmsService::class);
         
         DB::transaction(function () use ($request) {
             $request->update(['status' => 'approved']);
             
             if ($request->request_type === 'borrow') {
-                // Create borrowing record
-                Borrowing::create([
+                // Create borrowing record with the return_date from the request
+                $borrowing = Borrowing::create([
                     'book_id' => $request->book_id,
                     'user_id' => $request->user_id,
                     'borrowed_date' => now(),
                     'return_date' => $request->return_date
                 ]);
+                
+                // Log for debugging
+                \Log::info('Borrowing created', [
+                    'borrowing_id' => $borrowing->id,
+                    'return_date_from_request' => $request->return_date,
+                    'return_date_saved' => $borrowing->return_date
+                ]);
+                
                 $request->book->update(['availability' => 'Borrowed']);
             } else {
                 // Create reservation record
@@ -100,15 +110,29 @@ class BookRequestController extends Controller
                     'request_id' => $request->id,
                 ],
             ]);
+
+            // Send SMS notification
+            if ($request->user && $request->user->phone_number) {
+                $smsService->sendRequestApproved(
+                    $request->user->phone_number,
+                    optional($request->book)->title,
+                    $request->request_type,
+                    \Carbon\Carbon::parse($request->return_date)->format('M d, Y')
+                );
+            }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Notification create failed: ' . $e->getMessage());
         }
+
+        return redirect()->back();
     }
 
     public function reject($id)
     {
-        $request = BookRequest::findOrFail($id);
+        $request = BookRequest::with(['user', 'book'])->findOrFail($id);
+        
         $request->update(['status' => 'rejected']);
+        
         // notify the request owner
         try {
             \App\Models\Notification::create([
@@ -123,6 +147,8 @@ class BookRequestController extends Controller
                     'request_id' => $request->id,
                 ],
             ]);
+
+            // NO SMS for rejected requests - only in-app notification
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::error('Notification create failed: ' . $e->getMessage());
         }

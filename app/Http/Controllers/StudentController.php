@@ -24,7 +24,8 @@ class StudentController extends Controller
                 'course' => $book->course,
                 'image_url' => $book->image_path ? Storage::url($book->image_path) : null,
                 'author' => $book->author,
-                'availability' => $book->availability
+                'availability' => $book->availability,
+                'publicationDate' => $book->publicationDate ? $book->publicationDate->format('Y-m-d') : null
             ];
         });
 

@@ -14,14 +14,18 @@ class Book extends Model
         'author',
         'bookId',
         'publicationDate',
+        'dateAcquired',
         'description',
         'course',
+        'amount',
+        'subject_for',
         'image_path',
         'availability'
     ];
     
     protected $casts = [
         'publicationDate' => 'date',
+        'dateAcquired' => 'date',
     ];
 
     // Relationship with users who borrow books

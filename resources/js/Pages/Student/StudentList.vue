@@ -10,15 +10,40 @@
 
         <div class="overflow-x-auto">
           <div class="shadow-sm rounded-lg overflow-hidden bg-white">
-            <div class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-white to-gray-50">
-              <div class="flex items-center space-x-3">
+            <div class="flex flex-col md:flex-row items-center justify-between px-4 py-3 bg-gradient-to-r from-white to-gray-50 gap-3">
+              <div class="flex items-center space-x-3 w-full md:w-auto">
                 <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35m0 0A7 7 0 1116.65 16.65z" />
                 </svg>
-                <input v-model="query" type="text" placeholder="Search students by name, email or ID..." class="w-64 px-3 py-2 rounded-md border text-sm focus:ring-0 focus:border-indigo-300" />
-                <div class="text-sm text-gray-500">Showing <span class="font-semibold text-gray-700">{{ filteredStudents.length }}</span></div>
+                <input v-model="query" type="text" placeholder="Search students by name, email or ID..." class="flex-1 md:w-64 px-3 py-2 rounded-md border text-sm focus:ring-0 focus:border-indigo-300" />
               </div>
-              <div class="text-sm text-gray-500">Total: <span class="font-medium text-gray-700">{{ students.length }}</span></div>
+              
+              <div class="flex items-center gap-4 w-full md:w-auto">
+                <!-- Sort Dropdown -->
+                <div class="flex items-center gap-2">
+                  <label class="text-sm font-medium text-gray-700 whitespace-nowrap">
+                    <i class="fas fa-sort mr-1"></i> Sort By:
+                  </label>
+                  <select 
+                    v-model="sortBy"
+                    class="px-3 py-2 bg-white border border-gray-300 rounded-md text-sm focus:ring-0 focus:border-indigo-300 min-w-[180px]"
+                  >
+                    <option value="name-asc">Name (A-Z)</option>
+                    <option value="name-desc">Name (Z-A)</option>
+                    <option value="email-asc">Email (A-Z)</option>
+                    <option value="email-desc">Email (Z-A)</option>
+                    <option value="studentid-asc">Student ID (Ascending)</option>
+                    <option value="studentid-desc">Student ID (Descending)</option>
+                    <option value="course-asc">Course (A-Z)</option>
+                    <option value="course-desc">Course (Z-A)</option>
+                  </select>
+                </div>
+                
+                <div class="flex items-center gap-2 text-sm text-gray-500">
+                  <span>Showing <span class="font-semibold text-gray-700">{{ filteredStudents.length }}</span></span>
+                  <span>of <span class="font-medium text-gray-700">{{ students.length }}</span></span>
+                </div>
+              </div>
             </div>
 
             <table class="min-w-full divide-y divide-gray-200 bg-white">
@@ -80,7 +105,7 @@
 
     <Modal :show="showModal" @close="closeModal">
       <div class="p-6">
-        <h3 class="text-lg font-medium mb-4">{{ isEditing ? 'Edit Student' : 'Add New Student' }}</h3>
+        <h3 class="text-lg font-medium mb-4">{{ isEditing ? 'Edit User' : 'Add New Student' }}</h3>
         <form @submit.prevent="submitForm">
           <div class="space-y-4">
             <input v-model="form.fullname" type="text" placeholder="Full Name" class="w-full p-2 border rounded">
@@ -186,14 +211,50 @@ const form = useForm({
 
 // UI helpers
 const query = ref('');
+const sortBy = ref('name-asc');
+
 const filteredStudents = computed(() => {
+  // First, filter by search query
   const q = (query.value || '').trim().toLowerCase();
-  if (!q) return students;
-  return students.filter((s) => {
+  let filtered = q ? students.filter((s) => {
     const fullname = (s.fullname || '').toString().toLowerCase();
     const email = (s.email || '').toString().toLowerCase();
     const studentid = (s.studentid || '').toString().toLowerCase();
     return fullname.includes(q) || email.includes(q) || studentid.includes(q);
+  }) : students;
+  
+  // Then, apply sorting
+  const [sortField, sortOrder] = sortBy.value.split('-');
+  
+  return [...filtered].sort((a, b) => {
+    let aValue, bValue;
+    
+    switch(sortField) {
+      case 'name':
+        aValue = (a.fullname || '').toLowerCase();
+        bValue = (b.fullname || '').toLowerCase();
+        break;
+      case 'email':
+        aValue = (a.email || '').toLowerCase();
+        bValue = (b.email || '').toLowerCase();
+        break;
+      case 'studentid':
+        aValue = (a.studentid || '').toLowerCase();
+        bValue = (b.studentid || '').toLowerCase();
+        break;
+      case 'course':
+        aValue = (a.courseSection || '').toLowerCase();
+        bValue = (b.courseSection || '').toLowerCase();
+        break;
+      default:
+        return 0;
+    }
+    
+    if (sortOrder === 'asc') {
+      return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+    } else {
+      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+    }
   });
 });
 

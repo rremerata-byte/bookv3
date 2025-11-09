@@ -10,6 +10,7 @@ use App\Services\BookAvailabilityService;
 use Illuminate\Support\Facades\Storage;
 use App\Models\BookAction;
 use App\Models\Borrowing;
+use App\Models\Reservation;
 use App\Models\Notification;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -54,9 +55,11 @@ class BookController extends Controller
             'currentBorrower',    // Eager load current borrower relationship
             'currentReserver'     // Eager load current reserver relationship
         ])->get()->map(function ($book) {
+            // Get the most recent borrowing where the book hasn't been returned
             $currentBorrowing = $book->borrowings
                 ->where('returned_at', null)
-                ->first();  // Get the current borrowing where the book hasn't been returned
+                ->sortByDesc('borrowed_date')
+                ->first();
 
             // Prefer an approved BookRequest's return_date if present (admin approved request)
             $approvedBorrowRequest = null;
@@ -84,16 +87,19 @@ class BookController extends Controller
                 'title' => $book->title,
                 'author' => $book->author,
                 'bookId' => $book->bookId,
-                'publicationDate' => $book->publicationDate,
+                'publicationDate' => $book->publicationDate ? $book->publicationDate->format('Y-m-d') : null,
+                'dateAcquired' => $book->dateAcquired ? $book->dateAcquired->format('Y-m-d') : null,
                 'description' => $book->description,
                 'course' => $book->course,
+                'subject_for' => $book->subject_for,
+                'amount' => $book->amount,
                 'availability' => $book->availability,
                 'image_url' => $book->image_path ? Storage::url($book->image_path) : null,
                 'current_borrower' => ($currentBorrowing || $approvedBorrowRequest) ? [
                     'fullname' => $currentBorrowing?->user?->fullname ?? $approvedBorrowRequest?->user?->fullname,
-                    'borrowed_date' => $currentBorrowing?->borrowed_date ?? null,
-                    // prefer approved request return_date when available, else use borrowing return_date
-                    'due_date' => $approvedBorrowRequest ? ($approvedBorrowRequest->return_date instanceof \Carbon\Carbon ? $approvedBorrowRequest->return_date->toDateString() : $approvedBorrowRequest->return_date) : ($currentBorrowing?->return_date ?? null),
+                    'borrowed_date' => $currentBorrowing?->borrowed_date ? $currentBorrowing->borrowed_date->format('Y-m-d') : null,
+                    // Use the borrowing record's return_date (which comes from the approved request)
+                    'due_date' => $currentBorrowing?->return_date ? $currentBorrowing->return_date->format('Y-m-d') : ($approvedBorrowRequest?->return_date ? ($approvedBorrowRequest->return_date instanceof \Carbon\Carbon ? $approvedBorrowRequest->return_date->toDateString() : $approvedBorrowRequest->return_date) : null),
                     'phone_number' => $currentBorrowing?->user?->phone_number ?? $approvedBorrowRequest?->user?->phone_number,
                 ] : null,
                 'current_reserver' => $currentReserver ? [
@@ -143,11 +149,17 @@ class BookController extends Controller
             'author' => 'required|string|max:255',
             'bookId' => 'required|string|unique:books',
             'publicationDate' => 'required|date',
+            'dateAcquired' => 'nullable|date',
             'description' => 'nullable|string',
             'course' => 'nullable|string|max:255',
+            'subject_for' => 'nullable|string|max:255',
+            'amount' => 'nullable|numeric|min:0',
             'availability' => 'required|in:Available,Borrowed,Reserved',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
+
+        // Remove the 'image' key as we'll store the path instead
+        unset($validated['image']);
 
         if ($request->hasFile('image')) {
             $path = $request->file('image')->store('books', 'public');
@@ -161,10 +173,31 @@ class BookController extends Controller
         $qrData = $book->bookId; // You can change this to a URL if needed
     $qrCodeSvg = (string) QrCode::format('svg')->size(200)->generate($qrData);
 
+        // Get the 10 most recently added books (including the one just added)
+        $recentBooks = Book::latest()
+            ->take(10)
+            ->get(['id', 'title', 'author', 'bookId', 'publicationDate', 'dateAcquired', 'description', 'course', 'subject_for', 'amount', 'image_path'])
+            ->map(function($book) {
+                return [
+                    'id' => $book->id,
+                    'title' => $book->title,
+                    'author' => $book->author,
+                    'bookId' => $book->bookId,
+                    'publicationDate' => $book->publicationDate ? $book->publicationDate->format('Y-m-d') : null,
+                    'dateAcquired' => $book->dateAcquired ? $book->dateAcquired->format('Y-m-d') : null,
+                    'description' => $book->description,
+                    'course' => $book->course,
+                    'subject_for' => $book->subject_for,
+                    'amount' => $book->amount,
+                    'image_path' => $book->image_path,
+                ];
+            });
+
         // Return QR code SVG to the frontend via Inertia
         return Inertia::render('Books/AddBooks', [
             'message' => 'Book added successfully',
-            'qrCodeSvg' => $qrCodeSvg
+            'qrCodeSvg' => $qrCodeSvg,
+            'recentBooks' => $recentBooks
         ]);
     }
 
@@ -174,6 +207,9 @@ class BookController extends Controller
             'title' => 'required|string|max:255',
             'author' => 'required|string|max:255',
             'course' => 'nullable|string|max:255',
+            'subject_for' => 'nullable|string|max:255',
+            'amount' => 'nullable|numeric|min:0',
+            'dateAcquired' => 'nullable|date',
             'availability' => 'required|in:Available,Borrowed,Reserved',
             'image' => 'nullable|image|mimes:jpeg,png,jpg|max:2048'
         ]);
@@ -183,7 +219,7 @@ class BookController extends Controller
             if ($book->image_path) {
                 Storage::disk('public')->delete($book->image_path);
             }
-            
+            //path to store the books
             $path = $request->file('image')->store('books', 'public');
             $validated['image_path'] = $path;
         }
@@ -209,7 +245,29 @@ class BookController extends Controller
     }
     public function create()
     {
-        return Inertia::render('Books/AddBooks');
+        // Get the 10 most recently added books
+        $recentBooks = Book::latest()
+            ->take(10)
+            ->get(['id', 'title', 'author', 'bookId', 'publicationDate', 'dateAcquired', 'description', 'course', 'subject_for', 'amount', 'image_path'])
+            ->map(function($book) {
+                return [
+                    'id' => $book->id,
+                    'title' => $book->title,
+                    'author' => $book->author,
+                    'bookId' => $book->bookId,
+                    'publicationDate' => $book->publicationDate ? $book->publicationDate->format('Y-m-d') : null,
+                    'dateAcquired' => $book->dateAcquired ? $book->dateAcquired->format('Y-m-d') : null,
+                    'description' => $book->description,
+                    'course' => $book->course,
+                    'subject_for' => $book->subject_for,
+                    'amount' => $book->amount,
+                    'image_path' => $book->image_path,
+                ];
+            });
+
+        return Inertia::render('Books/AddBooks', [
+            'recentBooks' => $recentBooks
+        ]);
     }
 
     public function return(Book $book)
@@ -233,6 +291,13 @@ class BookController extends Controller
 
             if ($borrowing) {
                 $borrowing->update(['returned_at' => now()]);
+
+                // Update the related book_request to 'returned' status
+                BookRequest::where('book_id', $book->id)
+                    ->where('user_id', $borrowing->user_id)
+                    ->where('status', 'approved')
+                    ->where('request_type', 'borrow')
+                    ->update(['status' => 'returned']);
 
                 // send notification to the borrower
                 try {
@@ -277,6 +342,71 @@ class BookController extends Controller
         $book->update(['availability' => 'Available']);
         
         return redirect()->back()->with('success', 'Reservation cancelled successfully');
+    }
+
+    // New method to handle reservation returns
+    public function returnReservation(Book $book)
+    {
+        $user = Auth::user();
+        
+        // Create book action record
+        BookAction::create([
+            'book_id' => $book->id,
+            'user_id' => $user->id,
+            'type' => 'return',
+            'action_date' => now(),
+        ]);
+
+        // Mark the current reservation as completed and update the book_request status
+        try {
+            $reservation = Reservation::where('book_id', $book->id)
+                ->where('status', 'approved')
+                ->latest('created_at')
+                ->first();
+
+            if ($reservation) {
+                // Update reservation status to completed
+                $reservation->update(['status' => 'completed']);
+
+                // Update the related book_request to 'returned' status
+                $bookRequestUpdated = BookRequest::where('book_id', $book->id)
+                    ->where('user_id', $reservation->user_id)
+                    ->where('status', 'approved')
+                    ->where('request_type', 'reserve')
+                    ->update(['status' => 'returned']);
+
+                \Illuminate\Support\Facades\Log::info('Reservation return - BookRequest updated', [
+                    'book_id' => $book->id,
+                    'user_id' => $reservation->user_id,
+                    'rows_updated' => $bookRequestUpdated
+                ]);
+
+                // Send notification to the reserver
+                try {
+                    Notification::create([
+                        'user_id' => $reservation->user_id,
+                        'type' => 'book_returned',
+                        'message' => null,
+                        'payload' => [
+                            'book_title' => $book->title,
+                            'returned_at' => now()->toDateTimeString(),
+                            'reservation_id' => $reservation->id,
+                        ],
+                    ]);
+                } catch (\Exception $e) {
+                    \Illuminate\Support\Facades\Log::error('Failed creating return notification: ' . $e->getMessage());
+                }
+            } else {
+                \Illuminate\Support\Facades\Log::warning('No approved reservation found for book', ['book_id' => $book->id]);
+            }
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Error updating reservation on return: ' . $e->getMessage());
+        }
+
+        // Update book status
+        $book->update(['availability' => 'Available']);
+        
+        return redirect()->back()->with('success', 'Reserved book returned successfully');
     }
 
     // Generate QR code for a specific book

@@ -12,40 +12,40 @@
                     <li>
                         <Link 
                             href="/dashboard" 
-                            class="flex items-center space-x-2 text-white py-2 px-4 rounded-lg transition-colors"
+                            class="flex items-center space-x-3 text-white py-2 px-4 rounded-lg transition-colors hover:bg-[#00509e]"
                             :class="{ 'bg-[#00509e]': $page.url === '/dashboard' }"
                         >
-                            <i class="fas fa-tachometer-alt w-5"></i>
+                            <i class="fas fa-chart-line text-lg"></i>
                             <span>Dashboard</span>
                         </Link>
                     </li>
                     <li>
                         <Link 
                             href="/available-books" 
-                            class="flex items-center space-x-2 text-white py-2 px-4 rounded-lg transition-colors"
+                            class="flex items-center space-x-3 text-white py-2 px-4 rounded-lg transition-colors hover:bg-[#00509e]"
                             :class="{ 'bg-[#00509e]': $page.url === '/available-books' }"
                         >
-                            <i class="fas fa-book w-5"></i>
+                            <i class="fas fa-book text-lg"></i>
                             <span>Books Manager</span>
                         </Link>
                     </li>
                     <li>
                         <Link 
                             href="/add-book" 
-                            class="flex items-center space-x-2 text-white py-2 px-4 rounded-lg transition-colors"
+                            class="flex items-center space-x-3 text-white py-2 px-4 rounded-lg transition-colors hover:bg-[#00509e]"
                             :class="{ 'bg-[#00509e]': $page.url === '/add-book' }"
                         >
-                            <i class="fas fa-plus w-5"></i>
+                            <i class="fas fa-plus-circle text-lg"></i>
                             <span>Add Books</span>
                         </Link>
                     </li>
                     <li>
                         <Link 
                             href="/student-list" 
-                            class="flex items-center space-x-2 text-white py-2 px-4 rounded-lg transition-colors"
+                            class="flex items-center space-x-3 text-white py-2 px-4 rounded-lg transition-colors hover:bg-[#00509e]"
                             :class="{ 'bg-[#00509e]': $page.url === '/student-list' }"
                         >
-                            <i class="fas fa-user-graduate w-5"></i>
+                            <i class="fas fa-users text-lg"></i>
                             <span>User List</span>
                         </Link>
                     </li>

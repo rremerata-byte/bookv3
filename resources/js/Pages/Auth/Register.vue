@@ -149,7 +149,7 @@
               name="phone_number"
               type="tel" 
               v-model="phone_number" 
-              placeholder="Phone Number (Optional)" 
+              placeholder="Phone Number" 
               autocomplete="tel"
               class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-600 rounded-lg text-sm bg-[#2E3B4E]/50 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 hover:bg-[#2E3B4E]/70"
             >

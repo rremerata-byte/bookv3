@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'sms' => [
+        'api_key' => env('SMS_API_KEY'),
+        'sender_name' => env('SMS_SENDER_NAME', 'AutoRepair'),
+        'enabled' => env('SMS_ENABLED', false),
+    ],
+
 ];
