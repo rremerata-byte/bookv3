@@ -417,43 +417,50 @@
             </div>
 
             <!-- Search and Filter Row -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-4">
-              <!-- Search Input -->
-              <input 
-                v-model="historySearchQuery"
-                type="text" 
-                placeholder="Search by book, user, type..." 
-                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
-              />
-              
-              <!-- Request Status Filter -->
-              <select 
-                v-model="historyStatusFilter"
-                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
-              >
-                <option value="all">All Request Status</option>
-                <option value="approved">Approved</option>
-                <option value="rejected">Rejected</option>
-              </select>
+            <div class="space-y-3 mb-4">
+              <!-- First Row: Status Filters -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <select 
+                  v-model="historyStatusFilter"
+                  class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm"
+                >
+                  <option value="all">📋 All Request Status</option>
+                  <option value="approved">✅ Approved</option>
+                  <option value="rejected">❌ Rejected</option>
+                </select>
 
-              <!-- Return Status Filter -->
-              <select 
-                v-model="historyReturnFilter"
-                class="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
-              >
-                <option value="all">All Return Status</option>
-                <option value="returned">Returned</option>
-                <option value="not-returned">Not Returned Yet</option>
-              </select>
+                <select 
+                  v-model="historyReturnFilter"
+                  class="px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm"
+                >
+                  <option value="all">📦 All Return Status</option>
+                  <option value="returned">✔️ Returned</option>
+                  <option value="not-returned">⏳ Not Returned Yet</option>
+                </select>
+              </div>
 
-              <!-- Single Date Filter -->
-              <div class="relative">
-                <input 
-                  v-model="historyDate"
-                  type="date" 
-                  placeholder="Select Date"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm"
-                />
+              <!-- Second Row: Date Range -->
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div class="relative">
+                  <input 
+                    v-model="historyStartDate"
+                    type="date" 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm"
+                  />
+                  <label class="absolute -top-2.5 left-3 bg-white px-2 text-xs font-medium text-indigo-600">
+                    📅 Start Date
+                  </label>
+                </div>
+                <div class="relative">
+                  <input 
+                    v-model="historyEndDate"
+                    type="date" 
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-400 text-sm shadow-sm"
+                  />
+                  <label class="absolute -top-2.5 left-3 bg-white px-2 text-xs font-medium text-indigo-600">
+                    📅 End Date
+                  </label>
+                </div>
               </div>
             </div>
 
@@ -470,14 +477,7 @@
 
             <!-- History Report Container for PNG Export -->
             <div id="history-report-container" class="bg-white p-6 rounded-lg">
-              <!-- Report Header -->
-              <div class="mb-6 text-center border-b pb-4">
-                <h2 class="text-2xl font-bold text-gray-800">Book Request History Report</h2>
-                <p class="text-sm text-gray-600 mt-1">Generated on {{ new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) }}</p>
-                <p v-if="historyDate" class="text-sm text-blue-600 font-medium mt-1">
-                  Date: {{ formatDisplayDate(historyDate) }}
-                </p>
-              </div>
+             
 
             <div class="overflow-x-auto shadow-md rounded-lg">
               <table class="min-w-full bg-white border border-gray-200">
@@ -562,10 +562,10 @@
                     <td colspan="6" class="px-4 py-8 text-center">
                       <i class="fas fa-inbox text-gray-300 text-4xl mb-2"></i>
                       <p class="text-gray-500 font-medium">
-                        {{ historySearchQuery || historyStatusFilter !== 'all' ? 'No matching history found' : 'No history yet' }}
+                        {{ searchQuery || historyStatusFilter !== 'all' ? 'No matching history found' : 'No history yet' }}
                       </p>
                       <p class="text-gray-400 text-sm mt-1">
-                        {{ historySearchQuery || historyStatusFilter !== 'all' ? 'Try adjusting your search or filter' : 'Completed requests will appear here' }}
+                        {{ searchQuery || historyStatusFilter !== 'all' ? 'Try adjusting your search or filter' : 'Completed requests will appear here' }}
                       </p>
                     </td>
                   </tr>
@@ -576,10 +576,18 @@
             <!-- Summary Stats -->
             <div v-if="historyRequests.length > 0" class="mt-4">
               <!-- Date Info -->
-              <div v-if="historyDate" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+              <div v-if="historyStartDate || historyEndDate" class="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                 <p class="text-sm font-medium text-blue-800">
                   <i class="fas fa-calendar-day mr-2"></i>
-                  Showing results for {{ formatDisplayDate(historyDate) }}
+                  <span v-if="historyStartDate && historyEndDate">
+                    Showing results from {{ formatDisplayDate(historyStartDate) }} to {{ formatDisplayDate(historyEndDate) }}
+                  </span>
+                  <span v-else-if="historyStartDate">
+                    Showing results from {{ formatDisplayDate(historyStartDate) }} onwards
+                  </span>
+                  <span v-else-if="historyEndDate">
+                    Showing results up to {{ formatDisplayDate(historyEndDate) }}
+                  </span>
                   <span class="ml-2 text-blue-600 font-semibold">({{ filteredHistoryRequests.length }} records)</span>
                 </p>
               </div>
@@ -849,10 +857,10 @@ export default {
       searchQuery: '',
       sortBy: 'title-asc', // Default sort
       selectedAgeFilter: null, // null, 'green', 'blue', 'yellow', 'orange', 'red'
-      historySearchQuery: '', // Search for history
       historyStatusFilter: 'all', // 'all', 'approved', 'rejected'
       historyReturnFilter: 'all', // 'all', 'returned', 'not-returned'
-      historyDate: '', // Single date filter for specific day
+      historyStartDate: '', // Start date for date range filter
+      historyEndDate: '', // End date for date range filter
       showModal: false,
       showQrModal: false,
       qrCodeSvg: null,
@@ -946,13 +954,53 @@ export default {
       return books;
     },
     borrowedBooks() {
-      return this.books.filter(book => book.availability === 'Borrowed');
+      let books = this.books.filter(book => book.availability === 'Borrowed');
+      
+      // Apply search filter
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        books = books.filter(book => {
+          return (
+            book.title.toLowerCase().includes(query) ||
+            (book.current_borrower && book.current_borrower.fullname.toLowerCase().includes(query))
+          );
+        });
+      }
+      
+      return books;
     },
     reservedBooks() {
-      return this.books.filter(book => book.availability === 'Reserved');
+      let books = this.books.filter(book => book.availability === 'Reserved');
+      
+      // Apply search filter
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        books = books.filter(book => {
+          return (
+            book.title.toLowerCase().includes(query) ||
+            (book.current_reserver && book.current_reserver.fullname.toLowerCase().includes(query))
+          );
+        });
+      }
+      
+      return books;
     },
     pendingRequests() {
-      return this.bookRequests.filter(request => request.status === 'pending');
+      let requests = this.bookRequests.filter(request => request.status === 'pending');
+      
+      // Apply search filter
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
+        requests = requests.filter(request => {
+          return (
+            request.book.title.toLowerCase().includes(query) ||
+            request.user.fullname.toLowerCase().includes(query) ||
+            request.request_type.toLowerCase().includes(query)
+          );
+        });
+      }
+      
+      return requests;
     },
 
     historyRequests() {
@@ -966,9 +1014,9 @@ export default {
     filteredHistoryRequests() {
       let filtered = this.historyRequests;
 
-      // Apply search filter
-      if (this.historySearchQuery) {
-        const query = this.historySearchQuery.toLowerCase();
+      // Apply search filter using the main search bar
+      if (this.searchQuery) {
+        const query = this.searchQuery.toLowerCase();
         filtered = filtered.filter(request => {
           return (
             request.book.title.toLowerCase().includes(query) ||
@@ -999,17 +1047,36 @@ export default {
       }
 
       // Apply single date filter - show only records from that specific day
-      if (this.historyDate) {
-        const selectedDate = new Date(this.historyDate);
-        selectedDate.setHours(0, 0, 0, 0);
-        
-        const nextDay = new Date(selectedDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-        
+      if (this.historyStartDate || this.historyEndDate) {
         filtered = filtered.filter(request => {
           const requestDate = new Date(request.request_date);
           requestDate.setHours(0, 0, 0, 0);
-          return requestDate.getTime() === selectedDate.getTime();
+          
+          // If both dates are set, filter by range
+          if (this.historyStartDate && this.historyEndDate) {
+            const startDate = new Date(this.historyStartDate);
+            startDate.setHours(0, 0, 0, 0);
+            const endDate = new Date(this.historyEndDate);
+            endDate.setHours(23, 59, 59, 999);
+            
+            return requestDate >= startDate && requestDate <= endDate;
+          }
+          
+          // If only start date is set
+          if (this.historyStartDate) {
+            const startDate = new Date(this.historyStartDate);
+            startDate.setHours(0, 0, 0, 0);
+            return requestDate >= startDate;
+          }
+          
+          // If only end date is set
+          if (this.historyEndDate) {
+            const endDate = new Date(this.historyEndDate);
+            endDate.setHours(23, 59, 59, 999);
+            return requestDate <= endDate;
+          }
+          
+          return true;
         });
       }
 
@@ -1405,10 +1472,10 @@ export default {
     },
 
     clearHistoryFilters() {
-      this.historySearchQuery = '';
       this.historyStatusFilter = 'all';
       this.historyReturnFilter = 'all';
-      this.historyDate = '';
+      this.historyStartDate = '';
+      this.historyEndDate = '';
     },
 
     formatDisplayDate(dateString) {
@@ -1451,8 +1518,14 @@ export default {
       ];
 
       // Add date info if filter is applied
-      if (this.historyDate) {
-        summaryRows.splice(1, 0, ['Date', this.formatDisplayDate(this.historyDate)]);
+      if (this.historyStartDate || this.historyEndDate) {
+        if (this.historyStartDate && this.historyEndDate) {
+          summaryRows.splice(1, 0, ['Date Range', `${this.formatDisplayDate(this.historyStartDate)} to ${this.formatDisplayDate(this.historyEndDate)}`]);
+        } else if (this.historyStartDate) {
+          summaryRows.splice(1, 0, ['Start Date', this.formatDisplayDate(this.historyStartDate)]);
+        } else if (this.historyEndDate) {
+          summaryRows.splice(1, 0, ['End Date', this.formatDisplayDate(this.historyEndDate)]);
+        }
       }
 
       // Convert to CSV format
@@ -1469,8 +1542,14 @@ export default {
       
       // Generate filename with date
       let filename = 'book_requests_report';
-      if (this.historyDate) {
-        filename += `_${this.historyDate.replace(/-/g, '')}`;
+      if (this.historyStartDate || this.historyEndDate) {
+        if (this.historyStartDate && this.historyEndDate) {
+          filename += `_${this.historyStartDate.replace(/-/g, '')}_to_${this.historyEndDate.replace(/-/g, '')}`;
+        } else if (this.historyStartDate) {
+          filename += `_from_${this.historyStartDate.replace(/-/g, '')}`;
+        } else if (this.historyEndDate) {
+          filename += `_until_${this.historyEndDate.replace(/-/g, '')}`;
+        }
       } else {
         filename += `_${new Date().toISOString().split('T')[0].replace(/-/g, '')}`;
       }
@@ -1514,8 +1593,14 @@ export default {
           
           // Generate filename
           let filename = 'book_requests_report';
-          if (this.historyDate) {
-            filename += `_${this.historyDate.replace(/-/g, '')}`;
+          if (this.historyStartDate || this.historyEndDate) {
+            if (this.historyStartDate && this.historyEndDate) {
+              filename += `_${this.historyStartDate.replace(/-/g, '')}_to_${this.historyEndDate.replace(/-/g, '')}`;
+            } else if (this.historyStartDate) {
+              filename += `_from_${this.historyStartDate.replace(/-/g, '')}`;
+            } else if (this.historyEndDate) {
+              filename += `_until_${this.historyEndDate.replace(/-/g, '')}`;
+            }
           } else {
             filename += `_${new Date().toISOString().split('T')[0].replace(/-/g, '')}`;
           }

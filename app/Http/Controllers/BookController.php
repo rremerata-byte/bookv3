@@ -265,8 +265,12 @@ class BookController extends Controller
                 ];
             });
 
+        // Get all courses with their subjects for dropdowns
+        $courses = \App\Models\Course::with('subjects')->orderBy('code')->get();
+
         return Inertia::render('Books/AddBooks', [
-            'recentBooks' => $recentBooks
+            'recentBooks' => $recentBooks,
+            'courses' => $courses
         ]);
     }
 

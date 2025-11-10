@@ -77,7 +77,17 @@
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Course</label>
                   <div class="mt-1 p-2 bg-white border border-gray-50 rounded-md">
-                    <input v-model="form.course" type="text" placeholder="e.g., Computer Science" class="w-full rounded-md border border-gray-300 shadow-sm p-3 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition" />
+                    <select 
+                      v-model="form.course" 
+                      @change="form.subject_for = ''" 
+                      class="w-full rounded-md border border-gray-300 shadow-sm p-3 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition"
+                      required
+                    >
+                      <option value="">Select a course...</option>
+                      <option v-for="course in courses" :key="course.id" :value="course.code">
+                        {{ course.code }} - {{ course.name }}
+                      </option>
+                    </select>
                   </div>
                   <div v-if="form.errors.course" class="text-red-500 text-xs mt-1">{{ form.errors.course }}</div>
                 </div>
@@ -85,7 +95,16 @@
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Subject For</label>
                   <div class="mt-1 p-2 bg-white border border-gray-50 rounded-md">
-                    <input v-model="form.subject_for" type="text" placeholder="e.g., Mathematics, Programming" class="w-full rounded-md border border-gray-300 shadow-sm p-3 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition" />
+                    <select 
+                      v-model="form.subject_for" 
+                      :disabled="!form.course || filteredSubjects.length === 0"
+                      class="w-full rounded-md border border-gray-300 shadow-sm p-3 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    >
+                      <option value="">{{ form.course ? (filteredSubjects.length > 0 ? 'Select a subject...' : 'No subjects for this course') : 'Select a course first' }}</option>
+                      <option v-for="subject in filteredSubjects" :key="subject.id" :value="subject.name">
+                        {{ subject.code }} - {{ subject.name }}
+                      </option>
+                    </select>
                   </div>
                   <div v-if="form.errors.subject_for" class="text-red-500 text-xs mt-1">{{ form.errors.subject_for }}</div>
                 </div>
@@ -169,6 +188,10 @@ export default {
     recentBooks: {
       type: Array,
       default: () => []
+    },
+    courses: {
+      type: Array,
+      default: () => []
     }
   },
   data() {
@@ -201,6 +224,12 @@ export default {
   computed: {
     hasPreviousBooks() {
       return this.recentBooks && this.recentBooks.length > 0;
+    },
+    // Get subjects for the selected course
+    filteredSubjects() {
+      if (!this.form.course) return [];
+      const selectedCourse = this.courses.find(c => c.code === this.form.course);
+      return selectedCourse ? selectedCourse.subjects : [];
     }
   },
   methods: {

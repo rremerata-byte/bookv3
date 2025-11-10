@@ -20,19 +20,26 @@ class SendDueNotifications extends Command
     public function handle()
     {
         $today = Carbon::today();
+        $this->info("Processing notifications for: " . $today->toDateString());
 
         $borrowings = Borrowing::with(['user', 'book'])
             ->whereNull('returned_at')
             ->whereNotNull('return_date')
             ->get();
 
+        $this->info("Found {$borrowings->count()} active borrowings");
+        $created = 0;
+
         foreach ($borrowings as $b) {
             $due = Carbon::parse($b->return_date)->startOfDay();
-            $daysLeft = $today->diffInDays($due, false);
+            $daysLeft = (int) $today->diffInDays($due, false); // Cast to integer
+
+            $this->info("Borrowing #{$b->id}: {$daysLeft} days left (Due: {$due->toDateString()})");
 
             // helper to avoid duplicates: check if notification exists for this borrowing and type
             $exists = function ($type) use ($b) {
                 return Notification::where('type', $type)
+                    ->where('user_id', $b->user_id)
                     ->whereJsonContains('payload->borrowing_id', $b->id)
                     ->exists();
             };
@@ -50,6 +57,8 @@ class SendDueNotifications extends Command
                         'days_left' => 2,
                     ],
                 ]);
+                $this->info("  ✓ Created due_in_2_days notification");
+                $created++;
             }
 
             // 1 day before due date
@@ -65,6 +74,8 @@ class SendDueNotifications extends Command
                         'days_left' => 1,
                     ],
                 ]);
+                $this->info("  ✓ Created due_tomorrow notification");
+                $created++;
             }
 
             // On the due date
@@ -80,6 +91,8 @@ class SendDueNotifications extends Command
                         'days_left' => 0,
                     ],
                 ]);
+                $this->info("  ✓ Created due_today notification");
+                $created++;
             }
 
             // Overdue
@@ -96,10 +109,12 @@ class SendDueNotifications extends Command
                         'days_overdue' => abs($daysLeft),
                     ],
                 ]);
+                $this->info("  ✓ Created overdue notification");
+                $created++;
             }
         }
 
-        $this->info('Due notifications processed.');
+        $this->info("Done! Created {$created} notifications.");
         return 0;
     }
 }

@@ -49,6 +49,16 @@
                             <span>User List</span>
                         </Link>
                     </li>
+                    <li>
+                        <Link 
+                            href="/course-subject" 
+                            class="flex items-center space-x-3 text-white py-2 px-4 rounded-lg transition-colors hover:bg-[#00509e]"
+                            :class="{ 'bg-[#00509e]': $page.url === '/course-subject' }"
+                        >
+                            <i class="fas fa-graduation-cap text-lg"></i>
+                            <span>Course & Subject</span>
+                        </Link>
+                    </li>
                 </ul>
             </div>
             <hr class="mt-6">

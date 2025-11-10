@@ -36,6 +36,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/available-books', [BookController::class, 'index'])->name('books.index');
     Route::get('/student-list', [DashboardController::class, 'studentList'])->name('students.index');
     Route::get('/add-book', [BookController::class, 'create'])->name('books.create');
+    Route::get('/course-subject', [\App\Http\Controllers\CourseSubjectController::class, 'index'])->name('course-subject.index');
 });
 
 // User-only GET routes
@@ -62,6 +63,11 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::patch('/book-requests/{id}/reject', [BookRequestController::class, 'reject'])->name('book-requests.reject');
     Route::delete('/books/{book}/reserve', [BookController::class, 'cancelReservation'])->name('reserve.destroy');
     Route::post('/books/{book}/return', [BookController::class, 'return'])->name('receipts.return');
+    // Course & Subject routes
+    Route::post('/course-subject/add-course', [\App\Http\Controllers\CourseSubjectController::class, 'addCourse'])->name('course-subject.add-course');
+    Route::post('/course-subject/add-subject', [\App\Http\Controllers\CourseSubjectController::class, 'addSubject'])->name('course-subject.add-subject');
+    Route::delete('/course-subject/delete-course/{id}', [\App\Http\Controllers\CourseSubjectController::class, 'deleteCourse'])->name('course-subject.delete-course');
+    Route::delete('/course-subject/delete-subject/{id}', [\App\Http\Controllers\CourseSubjectController::class, 'deleteSubject'])->name('course-subject.delete-subject');
 });
 
 

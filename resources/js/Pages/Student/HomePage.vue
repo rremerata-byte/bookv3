@@ -1559,17 +1559,23 @@
               ? short(`Reservation ready: ${book} is available.`)
               : long(`Hi ${userName}, the book you reserved — "${book}" — is now available for pickup. Please collect it by ${this.formatDate(untilDate)}.`);
           case 'due_soon':
+          case 'due_in_2_days':
             return variant === 'short'
-              ? short(`Due in ${daysLeft || 3} days: ${book}`)
-              : long(`Reminder: "${book}" is due on ${this.formatDate(dueDate)} (in ${daysLeft || 3} days). Please return or extend to avoid fines.`);
+              ? short(`Due in ${daysLeft || 2} days: ${book}`)
+              : long(`Reminder: "${book}" is due on ${this.formatDate(dueDate)} (in ${daysLeft || 2} days). Please return or extend to avoid fines.`);
           case 'due_tomorrow':
             return variant === 'short'
               ? short(`Due tomorrow: ${book}`)
               : long(`Heads up — "${book}" is due tomorrow (${this.formatDate(dueDate)}). Return or contact the library to extend your loan.`);
-          case 'overdue':
+          case 'due_today':
             return variant === 'short'
-              ? short(`Overdue: ${book}`)
-              : long(`Overdue notice: "${book}" was due on ${this.formatDate(dueDate)}. Please return it immediately to avoid fines. Current fine: ${fine}.`);
+              ? short(`Due TODAY: ${book}`)
+              : long(`Important: "${book}" is due TODAY (${this.formatDate(dueDate)}). Please return it today to avoid late fees.`);
+          case 'overdue':
+            const daysOverdue = payload.days_overdue || payload.daysOverdue || '';
+            return variant === 'short'
+              ? short(`OVERDUE: ${book}${daysOverdue ? ' (' + daysOverdue + ' days)' : ''}`)
+              : long(`Overdue notice: "${book}" was due on ${this.formatDate(dueDate)}${daysOverdue ? ' (' + daysOverdue + ' days overdue)' : ''}. Please return it immediately to avoid additional fines.${fine ? ' Current fine: ₱' + fine : ''}`);
           case 'book_returned':
             return variant === 'short'
               ? short(`Returned: ${book}`)

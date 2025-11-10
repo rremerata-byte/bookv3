@@ -5,7 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
+/**
+ * @property int $id
+ * @property string $title
+ * @property string $author
+ * @property string $bookId
+ * @property \Illuminate\Support\Carbon|null $publicationDate
+ * @property \Illuminate\Support\Carbon|null $dateAcquired
+ * @property string|null $description
+ * @property string|null $course
+ * @property string|null $subject_for
+ * @property float|null $amount
+ * @property string|null $image_path
+ * @property string $availability
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ */
 class Book extends Model
 {
     // app/Models/Book.php
