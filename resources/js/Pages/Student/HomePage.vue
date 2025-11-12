@@ -15,7 +15,7 @@
           name="search"
           type="text" 
           v-model="searchQuery" 
-          placeholder="Search by title, author, or course..."
+          placeholder="Search by title, author, or program..."
           autocomplete="off"
           class="w-full p-2 text-sm border border-gray-300 rounded-lg text-black focus:outline-none focus:ring-2 focus:ring-blue-400 transition-all duration-200"
         />
@@ -37,12 +37,12 @@
           </span>
         </button>
 
-        <!-- User Info: show only name on very small screens; ID/phone/course move to dropdown -->
+        <!-- User Info: show only name on very small screens; ID/phone/program move to dropdown -->
         <div class="flex flex-col items-center sm:items-end space-y-0.5 text-center sm:text-right">
           <p class="text-sm font-semibold truncate max-w-[180px]">{{ user.fullname }}</p>
           <div class="hidden sm:block">
             <p class="text-xs text-gray-400 truncate max-w-[180px]">{{ user.studentid }}</p>
-            <p class="text-xs text-gray-400 truncate max-w-[180px]">{{ user.course || 'No course' }}</p>
+            <p class="text-xs text-gray-400 truncate max-w-[180px]">{{ user.course || 'No program' }}</p>
             <p class="text-xs text-gray-400 truncate max-w-[180px]">{{ user.phone_number || 'No phone number' }}</p>
           </div>
         </div>
@@ -56,7 +56,7 @@
               <button @click="copyStudentId" type="button" class="text-xs text-blue-600 hover:underline ml-2" title="Copy student ID">Copy</button>
             </div>
             <div class="mt-1">
-              <p class="text-xs text-gray-500 truncate">Course: {{ user.course || 'No course' }}</p>
+              <p class="text-xs text-gray-500 truncate">Program: {{ user.course || 'No program' }}</p>
             </div>
             <div class="flex items-center justify-between mt-1">
               <p class="text-xs text-gray-500 truncate">{{ user.phone_number || 'No phone number' }}</p>
@@ -118,9 +118,9 @@
         </span>
       </button>
 
-      <!-- Glowing Border Button - User Course (Toggle ON/OFF) -->
+      <!-- Glowing Border Button - User Program (Toggle ON/OFF) -->
       <button 
-        @click="filterByCourse"
+        @click="filterByProgram"
         type="button"
         :class="[
           'mt-2 px-4 py-2 rounded-lg font-semibold shadow-lg hover:shadow-xl focus:outline-none transition-all duration-300 relative overflow-hidden',
@@ -128,7 +128,7 @@
             ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white glow-button-active' 
             : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white glow-button'
         ]"
-        :title="isCourseFilterActive ? 'Click to show all books' : 'Click to filter by ' + (user.course || 'your course')"
+        :title="isCourseFilterActive ? 'Click to show all books' : 'Click to filter by ' + (user.course || 'your program')"
       >
         <span class="relative z-10 flex items-center space-x-2">
           <svg v-if="!isCourseFilterActive" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -137,7 +137,7 @@
           <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
-          <span>{{ isCourseFilterActive ? user.course + ' (ON)' : user.course || 'No Course' }}</span>
+          <span>{{ isCourseFilterActive ? user.course + ' (ON)' : user.course || 'No Program' }}</span>
         </span>
       </button>
     </div>
@@ -362,8 +362,8 @@
               <option value="title-desc">Title (Z-A)</option>
               <option value="author-asc">Author (A-Z)</option>
               <option value="author-desc">Author (Z-A)</option>
-              <option value="course-asc">Course (A-Z)</option>
-              <option value="course-desc">Course (Z-A)</option>
+              <option value="course-asc">Program (A-Z)</option>
+              <option value="course-desc">Program (Z-A)</option>
               <option value="availability">Availability</option>
               <option value="age-newest">Book Age (Newest)</option>
               <option value="age-oldest">Book Age (Oldest)</option>
@@ -473,8 +473,8 @@
             View QR Code
           </button>
           <p class="text-sm text-gray-600 mt-2">{{ book.description }}</p>
-          <p class="text-sm text-gray-700 mt-1"><span class="font-semibold">Subject:</span> <span class="font-semibold">{{ book.subject || 'N/A' }}</span></p>
-          <p class="text-sm text-gray-700 mt-1"><span class="font-semibold">Course:</span> <span class="font-semibold">{{ book.course || 'N/A' }}</span></p>
+          <p class="text-sm text-gray-700 mt-1"><span class="font-semibold">Course:</span> <span class="font-semibold">{{ book.subject || 'N/A' }}</span></p>
+          <p class="text-sm text-gray-700 mt-1"><span class="font-semibold">Program:</span> <span class="font-semibold">{{ book.course || 'N/A' }}</span></p>
           <p class="text-sm text-gray-700 mt-1"><span class="font-semibold">Author:</span> <span class="font-semibold">{{ book.author }}</span></p>
           <span 
             :class="{
@@ -918,7 +918,7 @@
         requestType: '',
         startDate: '',
         returnDate: '',
-        isCourseFilterActive: false, // Toggle state for course filter
+        isCourseFilterActive: false, // Toggle state for program filter
         profileForm: {
           fullname: '',
           email: '',
@@ -946,11 +946,11 @@
         return this.user.fullname.charAt(0);
       },
       filteredBooks() {
-        // Step 1: Filter by course if toggle is active
+        // Step 1: Filter by program if toggle is active
         let filtered = this.books;
         
         if (this.isCourseFilterActive && this.user.course) {
-          // When toggle is ON, only show books for user's course
+          // When toggle is ON, only show books for user's program
           filtered = filtered.filter(book => 
             book.course && book.course.toLowerCase().includes(this.user.course.toLowerCase())
           );
@@ -1324,10 +1324,10 @@
       toggleSidebar() {
         this.showSidebar = !this.showSidebar;
       },
-      filterByCourse() {
+      filterByProgram() {
         if (!this.user.course) {
           this.showToast = true;
-          this.toastMessage = 'No course assigned to your account';
+          this.toastMessage = 'No program assigned to your account';
           setTimeout(() => (this.showToast = false), 2500);
           return;
         }

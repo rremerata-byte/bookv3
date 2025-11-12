@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BookRequest;
+use App\Models\Course;
 use App\Models\Reservation;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -198,9 +199,13 @@ class BookRequestController extends Controller
                 ];
             });
     
+        // Get courses with their subjects for dropdowns
+        $courses = Course::with('subjects')->get();
+
         return Inertia::render('Books/AvailableBooks', [
             'books' => $books,
-            'bookRequests' => $bookRequests
+            'bookRequests' => $bookRequests,
+            'courses' => $courses
         ]);
     }
     

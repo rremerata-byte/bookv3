@@ -13,6 +13,7 @@ class Admin extends Authenticatable
         'fullname',
         'email',
         'password',
+        'role',
     ];
 
     protected $hidden = [
@@ -28,5 +29,16 @@ class Admin extends Authenticatable
     public function managedBooks()
     {
         return $this->hasMany(Book::class, 'added_by');
+    }
+
+    // Helper methods for role checking
+    public function isAdmin()
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isGuard()
+    {
+        return $this->role === 'guard';
     }
 }

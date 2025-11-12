@@ -66,15 +66,26 @@
               class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-600 rounded-lg text-sm bg-[#2E3B4E]/50 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 hover:bg-[#2E3B4E]/70"
             >
           </div>
-          
-          <!-- Course & Section -->
+          <!-- Phone Number -->
+          <div class="group">
+            <input 
+              id="phone_number"
+              name="phone_number"
+              type="tel" 
+              v-model="phone_number" 
+              placeholder="Phone Number" 
+              autocomplete="tel"
+              class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-600 rounded-lg text-sm bg-[#2E3B4E]/50 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 hover:bg-[#2E3B4E]/70"
+            >
+          </div>
+          <!-- Program -->
           <div class="group">
             <input 
               id="courseSection"
               name="courseSection"
               type="text" 
               v-model="courseSection" 
-              placeholder="Course & Section" 
+              placeholder="Program" 
               autocomplete="off"
               required 
               class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-600 rounded-lg text-sm bg-[#2E3B4E]/50 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 hover:bg-[#2E3B4E]/70"
@@ -142,18 +153,7 @@
             </button>
           </div>
           
-          <!-- Phone Number -->
-          <div class="group">
-            <input 
-              id="phone_number"
-              name="phone_number"
-              type="tel" 
-              v-model="phone_number" 
-              placeholder="Phone Number" 
-              autocomplete="tel"
-              class="w-full px-3 sm:px-4 py-2.5 sm:py-3 border border-gray-600 rounded-lg text-sm bg-[#2E3B4E]/50 text-gray-300 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-300 hover:bg-[#2E3B4E]/70"
-            >
-          </div>
+          
           
           <!-- Submit Button -->
           <div class="pt-2">

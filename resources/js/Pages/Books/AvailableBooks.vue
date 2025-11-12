@@ -10,7 +10,7 @@
             <input
               type="text"
               v-model="searchQuery"
-              placeholder="Search by title, author, or course..."
+              placeholder="Search by Title, Author, Program, Course, Amount, Date Acquired, Book ID, Publication Date..."
               class="w-full p-3 bg-transparent text-gray-700 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded"
             />
           </div>
@@ -56,8 +56,8 @@
               <option value="title-desc">Title (Z-A)</option>
               <option value="author-asc">Author (A-Z)</option>
               <option value="author-desc">Author (Z-A)</option>
-              <option value="course-asc">Course (A-Z)</option>
-              <option value="course-desc">Course (Z-A)</option>
+              <option value="course-asc">Program (A-Z)</option>
+              <option value="course-desc">Program (Z-A)</option>
               <option value="amount-asc">Amount (Low to High)</option>
               <option value="amount-desc">Amount (High to Low)</option>
               <option value="date-newest">Date Acquired (Newest)</option>
@@ -142,10 +142,11 @@
               <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Cover</th>
               <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Title</th>
               <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Author</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Program</th>
               <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Course</th>
-              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Subject For</th>
               <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Amount</th>
               <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Date Acquired</th>
+              <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Publication Date</th>
               <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Book ID</th>
               <th class="px-6 py-3 text-left font-semibold whitespace-nowrap">Availability</th>
               <th class="px-6 py-3 text-center font-semibold whitespace-nowrap">QR Code</th>
@@ -168,7 +169,7 @@
               </td>
               <!-- Book Author -->
               <td class="px-6 py-4 text-gray-700">{{ book.author }}</td>
-              <!-- Course -->
+              <!-- Program -->
               <td class="px-6 py-4">
                 <span class="text-gray-700">{{ book.course || 'N/A' }}</span>
               </td>
@@ -183,6 +184,10 @@
               <!-- Date Acquired -->
               <td class="px-6 py-4">
                 <span class="text-gray-700">{{ book.dateAcquired ? formatDate(book.dateAcquired) : 'N/A' }}</span>
+              </td>
+              <!-- Publication Date -->
+              <td class="px-6 py-4">
+                <span class="text-gray-700">{{ book.publicationDate ? formatDate(book.publicationDate) : 'N/A' }}</span>
               </td>
               <!-- Book ID -->
               <td class="px-6 py-4 text-gray-700">{{ book.bookId }}</td>
@@ -690,28 +695,36 @@
               />
             </div>
 
-            <!-- Course -->
+            <!-- Program -->
             <div class="mb-4">
-              <label for="editCourse" class="block text-sm font-medium text-gray-600">Course:</label>
-              <input
-                type="text"
+              <label for="editCourse" class="block text-sm font-medium text-gray-600">Program:</label>
+              <select
                 v-model="editBookData.course"
+                @change="editBookData.subject_for = ''"
                 id="editCourse"
-                placeholder="e.g., Computer Science, Mathematics, Literature"
                 class="mt-1 p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              >
+                <option value="">Select a Program...</option>
+                <option v-for="course in courses" :key="course.id" :value="course.code">
+                  {{ course.code }} - {{ course.name }}
+                </option>
+              </select>
             </div>
 
-            <!-- Subject For -->
+            <!-- Course -->
             <div class="mb-4">
-              <label for="editSubjectFor" class="block text-sm font-medium text-gray-600">Subject For:</label>
-              <input
-                type="text"
+              <label for="editSubjectFor" class="block text-sm font-medium text-gray-600">Course:</label>
+              <select
                 v-model="editBookData.subject_for"
+                :disabled="!editBookData.course || editFilteredSubjects.length === 0"
                 id="editSubjectFor"
-                placeholder="e.g., Mathematics, Programming"
-                class="mt-1 p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+                class="mt-1 p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed"
+              >
+                <option value="">{{ editBookData.course ? (editFilteredSubjects.length > 0 ? 'Select a Course...' : 'No Course for this program') : 'Select a Program first' }}</option>
+                <option v-for="subject in editFilteredSubjects" :key="subject.id" :value="subject.name">
+                  {{ subject.code }} - {{ subject.name }}
+                </option>
+              </select>
             </div>
 
             <!-- Amount -->
@@ -735,6 +748,17 @@
                 type="date"
                 v-model="editBookData.dateAcquired"
                 id="editDateAcquired"
+                class="mt-1 p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <!-- Publication Date -->
+            <div class="mb-4">
+              <label for="editPublicationDate" class="block text-sm font-medium text-gray-600">Publication Date:</label>
+              <input
+                type="date"
+                v-model="editBookData.publicationDate"
+                id="editPublicationDate"
                 class="mt-1 p-2 border border-gray-300 rounded w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
@@ -849,7 +873,8 @@ export default {
     },
   props: {
     books: Array,
-    bookRequests: Array
+    bookRequests: Array,
+    courses: Array
   },
   data() {
     return {
@@ -874,6 +899,7 @@ export default {
         subject_for: '',
         amount: '',
         dateAcquired: '',
+        publicationDate: '',
         availability: 'Available',
         availabilityDate: '',
         image_url: null
@@ -896,9 +922,15 @@ export default {
   computed: {
     filteredBooks() {
       let books = this.books.filter(book => {
-        return book.title.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-               book.author.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-               (book.course && book.course.toLowerCase().includes(this.searchQuery.toLowerCase()));
+        const query = this.searchQuery.toLowerCase();
+        return book.title.toLowerCase().includes(query) ||
+               book.author.toLowerCase().includes(query) ||
+               (book.course && book.course.toLowerCase().includes(query)) ||
+               (book.subject_for && book.subject_for.toLowerCase().includes(query)) ||
+               (book.amount && book.amount.toString().includes(query)) ||
+               (book.dateAcquired && book.dateAcquired.toLowerCase().includes(query)) ||
+               (book.bookId && book.bookId.toLowerCase().includes(query)) ||
+               (book.publicationDate && book.publicationDate.toLowerCase().includes(query));
       });
 
       // Apply age filter if selected
@@ -1107,6 +1139,12 @@ export default {
 
     reservedRequestsCount() {
       return this.filteredHistoryRequests.filter(r => r.request_type === 'reserve').length;
+    },
+
+    editFilteredSubjects() {
+      if (!this.editBookData.course) return [];
+      const selectedCourse = this.courses.find(c => c.code === this.editBookData.course);
+      return selectedCourse ? selectedCourse.subjects : [];
     }
   },
 
@@ -1192,6 +1230,7 @@ export default {
         subject_for: book.subject_for || '',
         amount: book.amount || '',
         dateAcquired: book.dateAcquired || '',
+        publicationDate: book.publicationDate || '',
         availability: book.availability || 'Available',
         availabilityDate: book.availabilityDate || '',
         image_url: book.image_url, // Include the current image URL
@@ -1223,6 +1262,7 @@ export default {
       formData.append('subject_for', this.editBookData.subject_for || '');
       formData.append('amount', this.editBookData.amount || '');
       formData.append('dateAcquired', this.editBookData.dateAcquired || '');
+      formData.append('publicationDate', this.editBookData.publicationDate || '');
       formData.append('availability', this.editBookData.availability);
       
       if (this.editBookData.image_url instanceof File) {
@@ -1254,6 +1294,7 @@ export default {
         subject_for: '',
         amount: '',
         dateAcquired: '',
+        publicationDate: '',
         availability: 'Available',
         availabilityDate: '',
         image_url: null

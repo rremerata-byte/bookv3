@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Book;
 use App\Models\BookRequest;
+use App\Models\Course;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Services\BookAvailabilityService;
@@ -133,11 +134,15 @@ class BookController extends Controller
         // Top 5 users with most borrow/reserve requests
         $topRequestUsers = $this->getTopRequestUsers(5);
 
+        // Get courses with their subjects for dropdowns
+        $courses = Course::with('subjects')->get();
+
         // Return data to the Inertia view
         return Inertia::render('Books/AvailableBooks', [
             'books' => $books,
             'bookRequests' => $bookRequests,
-            'topRequestUsers' => $topRequestUsers
+            'topRequestUsers' => $topRequestUsers,
+            'courses' => $courses
         ]);
     }
     

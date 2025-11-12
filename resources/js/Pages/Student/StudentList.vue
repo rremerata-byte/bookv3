@@ -34,8 +34,8 @@
                     <option value="email-desc">Email (Z-A)</option>
                     <option value="studentid-asc">Student ID (Ascending)</option>
                     <option value="studentid-desc">Student ID (Descending)</option>
-                    <option value="course-asc">Course (A-Z)</option>
-                    <option value="course-desc">Course (Z-A)</option>
+                    <option value="course-asc">Program (A-Z)</option>
+                    <option value="course-desc">Program (Z-A)</option>
                   </select>
                 </div>
                 
@@ -52,7 +52,7 @@
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student ID</th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Course & Section</th>
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Program</th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gender</th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</th>
                   <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>

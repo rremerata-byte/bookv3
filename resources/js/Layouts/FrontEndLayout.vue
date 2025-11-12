@@ -56,7 +56,7 @@
                             :class="{ 'bg-[#00509e]': $page.url === '/course-subject' }"
                         >
                             <i class="fas fa-graduation-cap text-lg"></i>
-                            <span>Course & Subject</span>
+                            <span>Program & Course</span>
                         </Link>
                     </li>
                 </ul>

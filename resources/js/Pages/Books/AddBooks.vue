@@ -75,7 +75,7 @@
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Course</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Program</label>
                   <div class="mt-1 p-2 bg-white border border-gray-50 rounded-md">
                     <select 
                       v-model="form.course" 
@@ -83,7 +83,7 @@
                       class="w-full rounded-md border border-gray-300 shadow-sm p-3 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition"
                       required
                     >
-                      <option value="">Select a course...</option>
+                      <option value="">Select a Program...</option>
                       <option v-for="course in courses" :key="course.id" :value="course.code">
                         {{ course.code }} - {{ course.name }}
                       </option>
@@ -93,14 +93,14 @@
                 </div>
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Subject For</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Course</label>
                   <div class="mt-1 p-2 bg-white border border-gray-50 rounded-md">
                     <select 
                       v-model="form.subject_for" 
                       :disabled="!form.course || filteredSubjects.length === 0"
                       class="w-full rounded-md border border-gray-300 shadow-sm p-3 focus:outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100 transition disabled:bg-gray-100 disabled:cursor-not-allowed"
                     >
-                      <option value="">{{ form.course ? (filteredSubjects.length > 0 ? 'Select a subject...' : 'No subjects for this course') : 'Select a course first' }}</option>
+                      <option value="">{{ form.course ? (filteredSubjects.length > 0 ? 'Select a Course...' : 'No Course for this program') : 'Select a Program first' }}</option>
                       <option v-for="subject in filteredSubjects" :key="subject.id" :value="subject.name">
                         {{ subject.code }} - {{ subject.name }}
                       </option>

@@ -86,6 +86,12 @@ Route::middleware(['auth', 'role:admin,user'])->group(function () {
     Route::delete('/notifications/{notification}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('notifications.destroy');
 });
 
+// Guard-only routes
+Route::middleware(['auth', 'role:guard'])->group(function () {
+    Route::get('/guard/dashboard', [\App\Http\Controllers\GuardController::class, 'index'])->name('guard.dashboard');
+    Route::get('/guard/scan/{bookId}', [\App\Http\Controllers\GuardController::class, 'scanBook'])->name('guard.scan');
+    Route::post('/guard/scan-image', [\App\Http\Controllers\GuardController::class, 'scanImage'])->name('guard.scan-image');
+});
 
 
 require __DIR__.'/auth.php';
