@@ -114,7 +114,7 @@
     ]
   },
   "resources/js/Pages/Auth/Register.vue": {
-    "file": "assets/Register-BEGKnRYh.js",
+    "file": "assets/Register-CV3vyMZm.js",
     "name": "Register",
     "src": "resources/js/Pages/Auth/Register.vue",
     "isDynamicEntry": true,
@@ -123,7 +123,7 @@
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ],
     "css": [
-      "assets/Register-D8zs0naA.css"
+      "assets/Register-DjuQq_QC.css"
     ]
   },
   "resources/js/Pages/Auth/ResetPassword.vue": {
@@ -339,7 +339,7 @@
     ]
   },
   "resources/js/Pages/Student/StudentList.vue": {
-    "file": "assets/StudentList-Dj1sp_9I.js",
+    "file": "assets/StudentList-B3WqyzvO.js",
     "name": "StudentList",
     "src": "resources/js/Pages/Student/StudentList.vue",
     "isDynamicEntry": true,
@@ -351,7 +351,7 @@
     ]
   },
   "resources/js/Pages/Welcome.vue": {
-    "file": "assets/Welcome-Darm4Cty.js",
+    "file": "assets/Welcome-CwhiG4Av.js",
     "name": "Welcome",
     "src": "resources/js/Pages/Welcome.vue",
     "isDynamicEntry": true,
@@ -360,14 +360,14 @@
       "__plugin-vue_export-helper-DlAUqK2U.js"
     ],
     "css": [
-      "assets/Welcome-DtTAd5Ap.css"
+      "assets/Welcome-vbmBiBoF.css"
     ],
     "assets": [
       "assets/home-Di5uCMrT.webp"
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-BY-wUa5o.js",
+    "file": "assets/app-BVS4sEfL.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
