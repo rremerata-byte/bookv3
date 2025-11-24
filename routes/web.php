@@ -62,6 +62,8 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::patch('/book-requests/{id}/approve', [BookRequestController::class, 'approve'])->name('book-requests.approve');
     Route::patch('/book-requests/{id}/reject', [BookRequestController::class, 'reject'])->name('book-requests.reject');
     Route::delete('/books/{book}/reserve', [BookController::class, 'cancelReservation'])->name('reserve.destroy');
+    // Admin action: mark a reserved book as returned
+    Route::post('/books/{book}/reserve/return', [BookController::class, 'returnReservation'])->name('reserve.return');
     Route::post('/books/{book}/return', [BookController::class, 'return'])->name('receipts.return');
     // Course & Subject routes
     Route::post('/course-subject/add-course', [\App\Http\Controllers\CourseSubjectController::class, 'addCourse'])->name('course-subject.add-course');
