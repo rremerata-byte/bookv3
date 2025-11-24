@@ -1,13 +1,10 @@
 <template>
-
   <!-- Header Section -->
   <header class="bg-[#081c2d] text-white py-3 px-4 md:px-6 shadow-sm mb-4 flex flex-col md:flex-row items-center justify-between">
       <!-- Logo Section -->
-
       <div class="flex items-center space-x-4 justify-center md:justify-start w-full md:w-auto">
         <img src="/img/logo2.png" alt="BOOK CLOUD Logo" class="max-w-[150px] h-auto" />
       </div>
-
       <!-- Search Bar Section (Centered) -->
       <div class="w-full md:flex-1 md:mx-6 mt-3 md:mt-0">
         <input 
@@ -225,12 +222,20 @@
                 <div :class="note.read ? 'ml-0' : 'ml-4'">
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
+                      <!-- Main notification text -->
                       <p class="text-sm text-gray-800 font-medium">
-                        {{ buildNotificationText(note, 'short') }}
+                        {{ buildNotificationText(note, 'short') || 'New notification' }}
                       </p>
+                      <!-- Detailed text -->
                       <p class="text-xs text-gray-500 mt-1">
-                        {{ buildNotificationText(note, 'long') }}
+                        {{ buildNotificationText(note, 'long') || 'Please check notification details.' }}
                       </p>
+                      <!-- Debug info in development (remove after testing) -->
+                      <div v-if="!buildNotificationText(note, 'short')" class="text-xs text-red-500 mt-1 p-2 bg-red-50 rounded">
+                        <strong>Debug:</strong> Type: "{{ note.type || 'no type' }}", 
+                        Data: {{ JSON.stringify(note.data || note.payload || {}) }}
+                      </div>
+                      <!-- Timestamp -->
                       <p v-if="note.created_at" class="text-xs text-gray-400 mt-1 flex items-center">
                         <i class="fas fa-clock mr-1"></i>
                         {{ formatDateTime(note.created_at) }}
@@ -1520,71 +1525,168 @@
         }
       },
       buildNotificationText(note, variant = 'short') {
-        // If server already provided a message, prefer it (short for preview)
-        if (note.message && variant === 'short') return note.message;
+        // Debug logging to help identify issues
+        if (!note) return 'No notification data';
+        
+        // If server already provided a message, prefer it
+        if (note.message && note.message.trim()) {
+          return variant === 'short' ? note.message : note.message;
+        }
 
-        const payload = (note.payload && typeof note.payload === 'object') ? note.payload : (note.data && typeof note.data === 'object' ? note.data : {});
-        const book = payload.book_title || payload.book || '';
-        const userName = payload.user_name || (this.user && this.user.fullname) || 'You';
-        const reqType = payload.request_type || payload.requestType || payload.type || 'request';
-        const reqDate = payload.request_date || payload.requestDate || payload.start_date || payload.requested_at;
-        const startDate = payload.start_date || payload.startDate || payload.request_date || reqDate;
-        const dueDate = payload.due_date || payload.return_date || payload.dueDate;
-        const untilDate = payload.until_date || payload.untilDate || payload.available_until;
-        const daysLeft = payload.days_left || payload.daysLeft;
-        const reason = payload.reason || payload.note || '';
-        const fine = payload.fine_amount || payload.fineAmount || payload.fine || '';
+        // Try multiple payload formats - Laravel notifications can store data differently
+        const payload = note.payload || note.data || {};
+        const notificationData = typeof payload === 'string' ? JSON.parse(payload) : payload;
+        
+        // Extract book title from various possible fields
+        const book = notificationData.book_title || 
+                    notificationData.book || 
+                    notificationData.title ||
+                    (notificationData.book_data && notificationData.book_data.title) ||
+                    'Unknown Book';
+        
+        const userName = notificationData.user_name || 
+                        (this.user && this.user.fullname) || 
+                        'You';
+        
+        const reqType = notificationData.request_type || 
+                       notificationData.requestType || 
+                       notificationData.type || 
+                       'request';
+        
+        const reqDate = notificationData.request_date || 
+                       notificationData.requestDate || 
+                       notificationData.start_date || 
+                       notificationData.requested_at;
+        
+        const startDate = notificationData.start_date || 
+                         notificationData.startDate || 
+                         notificationData.request_date || 
+                         reqDate;
+        
+        const dueDate = notificationData.due_date || 
+                       notificationData.return_date || 
+                       notificationData.dueDate;
+        
+        const untilDate = notificationData.until_date || 
+                         notificationData.untilDate || 
+                         notificationData.available_until;
+        
+        const daysLeft = notificationData.days_left || 
+                        notificationData.daysLeft || 
+                        notificationData.days_remaining;
+        
+        const reason = notificationData.reason || 
+                      notificationData.note || 
+                      notificationData.rejection_reason || 
+                      '';
+        
+        const fine = notificationData.fine_amount || 
+                    notificationData.fineAmount || 
+                    notificationData.fine || 
+                    '';
 
-        const short = (text) => text;
-        const long = (text) => text;
+        const daysOverdue = notificationData.days_overdue || 
+                           notificationData.daysOverdue || 
+                           '';
 
-        switch ((note.type || '').toLowerCase()) {
+        // Normalize notification type
+        const notificationType = (note.type || '').toLowerCase().replace(/[^a-z_]/g, '');
+
+        // Handle different notification types
+        switch (notificationType) {
           case 'request_submitted':
+          case 'requestsubmitted':
           case 'request_submitted_notification':
-          case 'request_submitted':
             return variant === 'short'
-              ? short(`Request received — ${book} (${reqType}) is pending review.`)
-              : long(`${userName}, your ${reqType} request for "${book}" starting ${this.formatDate(reqDate)} is received and is pending approval.`);
+              ? `Request submitted: ${book} (${reqType})`
+              : `Your ${reqType} request for "${book}" has been submitted and is pending review.`;
+              
           case 'request_approved':
+          case 'requestapproved':
             return variant === 'short'
-              ? short(`Request approved: ${book} — pick-up/borrow starts ${this.formatDate(startDate)}.`)
-              : long(`Good news, ${userName}! Your ${reqType} request for "${book}" has been approved. Start date: ${this.formatDate(startDate)}. Due: ${this.formatDate(dueDate)}.`);
+              ? `Approved: ${book}`
+              : `Good news! Your ${reqType} request for "${book}" has been approved. ${startDate ? 'Start date: ' + this.formatDate(startDate) : ''}`;
+              
           case 'request_rejected':
+          case 'requestrejected':
             return variant === 'short'
-              ? short(`Request declined: ${book}.`)
-              : long(`We're sorry, ${userName}. Your ${reqType} request for "${book}" (start: ${this.formatDate(reqDate)}) was declined. Reason: ${reason}. Contact admin for details.`);
+              ? `Request declined: ${book}`
+              : `Your ${reqType} request for "${book}" was declined. ${reason ? 'Reason: ' + reason : 'Contact admin for details.'}`;
+              
           case 'reservation_ready':
+          case 'reservationready':
           case 'reservation_ready_notification':
             return variant === 'short'
-              ? short(`Reservation ready: ${book} is available.`)
-              : long(`Hi ${userName}, the book you reserved — "${book}" — is now available for pickup. Please collect it by ${this.formatDate(untilDate)}.`);
+              ? `Ready for pickup: ${book}`
+              : `The book you reserved "${book}" is now available for pickup. ${untilDate ? 'Please collect it by ' + this.formatDate(untilDate) : ''}`;
+              
           case 'due_soon':
+          case 'duesoon':
           case 'due_in_2_days':
+          case 'duein2days':
+            const days = daysLeft || '2';
             return variant === 'short'
-              ? short(`Due in ${daysLeft || 2} days: ${book}`)
-              : long(`Reminder: "${book}" is due on ${this.formatDate(dueDate)} (in ${daysLeft || 2} days). Please return or extend to avoid fines.`);
+              ? `Due in ${days} day${days !== '1' ? 's' : ''}: ${book}`
+              : `Reminder: "${book}" is due ${dueDate ? 'on ' + this.formatDate(dueDate) : 'soon'} (in ${days} day${days !== '1' ? 's' : ''}). Please return it to avoid fines.`;
+              
           case 'due_tomorrow':
+          case 'duetomorrow':
             return variant === 'short'
-              ? short(`Due tomorrow: ${book}`)
-              : long(`Heads up — "${book}" is due tomorrow (${this.formatDate(dueDate)}). Return or contact the library to extend your loan.`);
+              ? `Due tomorrow: ${book}`
+              : `"${book}" is due tomorrow${dueDate ? ' (' + this.formatDate(dueDate) + ')' : ''}. Please return it to avoid late fees.`;
+              
           case 'due_today':
+          case 'duetoday':
             return variant === 'short'
-              ? short(`Due TODAY: ${book}`)
-              : long(`Important: "${book}" is due TODAY (${this.formatDate(dueDate)}). Please return it today to avoid late fees.`);
+              ? `Due TODAY: ${book}`
+              : `URGENT: "${book}" is due TODAY${dueDate ? ' (' + this.formatDate(dueDate) + ')' : ''}. Please return it immediately to avoid late fees.`;
+              
           case 'overdue':
-            const daysOverdue = payload.days_overdue || payload.daysOverdue || '';
+          case 'book_overdue':
+          case 'bookoverdue':
             return variant === 'short'
-              ? short(`OVERDUE: ${book}${daysOverdue ? ' (' + daysOverdue + ' days)' : ''}`)
-              : long(`Overdue notice: "${book}" was due on ${this.formatDate(dueDate)}${daysOverdue ? ' (' + daysOverdue + ' days overdue)' : ''}. Please return it immediately to avoid additional fines.${fine ? ' Current fine: ₱' + fine : ''}`);
+              ? `OVERDUE: ${book}${daysOverdue ? ' (' + daysOverdue + ' days)' : ''}`
+              : `OVERDUE NOTICE: "${book}" was due ${dueDate ? 'on ' + this.formatDate(dueDate) : 'recently'}${daysOverdue ? ' (' + daysOverdue + ' days overdue)' : ''}. Please return immediately.${fine ? ' Current fine: ₱' + fine : ''}`;
+              
           case 'book_returned':
+          case 'bookreturned':
             return variant === 'short'
-              ? short(`Returned: ${book}`)
-              : long(`Your borrowed book "${book}" was marked returned on ${this.formatDate(dueDate || payload.returned_at)}.`);
+              ? `Returned: ${book}`
+              : `Your book "${book}" has been successfully returned${dueDate ? ' on ' + this.formatDate(dueDate) : ''}.`;
+              
+          case 'fine_imposed':
+          case 'fineimposed':
+            return variant === 'short'
+              ? `Fine imposed: ${book} - ₱${fine || 'N/A'}`
+              : `A fine of ₱${fine || 'N/A'} has been imposed for the overdue book "${book}". Please settle the fine at the library.`;
+              
           default:
-            // fallback to server message or a generic rendering of payload
-            if (note.message) return note.message;
-            if (payload && Object.keys(payload).length) return JSON.stringify(payload);
-            return '';
+            // Enhanced fallback with better error handling
+            console.log('Unknown notification type:', note.type, 'Data:', notificationData);
+            
+            // Try to extract meaningful information from the notification
+            if (book && book !== 'Unknown Book') {
+              return variant === 'short' 
+                ? `Notification: ${book}`
+                : `You have a notification regarding "${book}".`;
+            }
+            
+            // If we have the original message from server, use it
+            if (note.message && note.message.trim()) {
+              return note.message;
+            }
+            
+            // Last resort: show the notification type or data
+            if (note.type) {
+              return variant === 'short' 
+                ? `${note.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`
+                : `You have a notification of type: ${note.type}`;
+            }
+            
+            // If all else fails, show some indication there's a notification
+            return variant === 'short' 
+              ? 'New notification' 
+              : 'You have a new notification. Please check the details.';
         }
       },
       formatDateTime(date) {

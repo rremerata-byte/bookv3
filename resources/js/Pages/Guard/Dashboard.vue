@@ -1,28 +1,28 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+  <div class="min-h-screen bg-gradient-to-br from-forest-800 via-forest-900 to-forest-950">
     <!-- Background effects -->
     <div class="absolute inset-0 overflow-hidden">
-      <div class="absolute -top-4 -right-4 w-32 h-32 bg-purple-500/20 rounded-full blur-3xl animate-pulse"></div>
-      <div class="absolute top-1/3 -left-8 w-48 h-48 bg-blue-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
-      <div class="absolute bottom-1/4 xright-1/3 w-40 h-40 bg-cyan-500/15 rounded-full blur-3xl animate-pulse delay-2000"></div>
+      <div class="absolute -top-4 -right-4 w-32 h-32 bg-sunshine-500/20 rounded-full blur-3xl animate-pulse"></div>
+      <div class="absolute top-1/3 -left-8 w-48 h-48 bg-citrus-500/10 rounded-full blur-3xl animate-pulse delay-1000"></div>
+      <div class="absolute bottom-1/4 xright-1/3 w-40 h-40 bg-forest-500/15 rounded-full blur-3xl animate-pulse delay-2000"></div>
     </div>
 
     <!-- Header -->
-    <header class="relative z-10 bg-black/20 backdrop-blur-lg border-b border-white/10">
+    <header class="relative z-10 bg-black/20 backdrop-blur-lg border-b border-sunshine-200/20">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 lg:py-4">
         <div class="flex items-center justify-between">
           <div class="flex items-center space-x-3 lg:space-x-4">
             <div class="relative">
-              <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-r from-purple-500 to-cyan-500 rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg">
+              <div class="w-10 h-10 lg:w-12 lg:h-12 bg-gradient-to-r from-sunshine-500 to-citrus-500 rounded-lg lg:rounded-xl flex items-center justify-center shadow-lg">
                 <i class="fas fa-shield-alt text-white text-lg lg:text-xl"></i>
               </div>
-              <div class="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-green-500 rounded-full border-2 border-slate-900 animate-pulse"></div>
+              <div class="absolute -top-1 -right-1 w-3 h-3 lg:w-4 lg:h-4 bg-forest-500 rounded-full border-2 border-forest-900 animate-pulse"></div>
             </div>
             <div>
-              <h1 class="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">
+              <h1 class="text-lg sm:text-xl lg:text-2xl font-bold bg-gradient-to-r from-white to-sunshine-200 bg-clip-text text-transparent">
                 Security Guard Dashboard
               </h1>
-              <p class="text-purple-200/80 text-xs sm:text-sm hidden sm:block">Library Exit Scanner System</p>
+              <p class="text-sunshine-200/80 text-xs sm:text-sm hidden sm:block">Library Exit Scanner System</p>
             </div>
           </div>
           
@@ -38,6 +38,16 @@
             >
               <i class="fas fa-sign-out-alt mr-1 lg:mr-2"></i>
               <span class="hidden sm:inline">Logout</span>
+            </button>
+
+            <!-- Toggle front/back camera (mobile) -->
+            <button
+              @click="toggleFacing"
+              type="button"
+              class="w-full mt-2 py-2 px-3 rounded-xl bg-gradient-to-r from-sunshine-400 to-citrus-400 text-white text-sm font-medium hover:from-sunshine-500 hover:to-citrus-500 transition-all duration-200"
+            >
+              <i class="fas fa-sync-alt mr-2"></i>
+              Toggle Camera
             </button>
           </div>
         </div>
@@ -195,7 +205,10 @@
                 <div class="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
                 <p class="text-purple-200">Initializing camera...</p>
               </div>
-              
+
+              <!-- Video preview: works on mobile (playsInline), desktop -->
+              <video ref="video" class="absolute inset-0 w-full h-full object-cover" playsinline muted></video>
+
               <!-- Scanning Animation -->
               <div v-if="scanning" class="absolute inset-0 flex items-center justify-center z-10">
                 <div class="w-32 h-1 bg-gradient-to-r from-transparent via-cyan-400 to-transparent animate-pulse"></div>
@@ -331,6 +344,7 @@
 </template>
 
 <script>
+import jsQR from 'jsqr';
 export default {
   name: 'GuardDashboard',
   props: {
@@ -356,6 +370,11 @@ export default {
       blockedToday: 0,
       uploadedImage: null,
       processingImage: false,
+      // Mobile camera / scanner state
+      scanStream: null,
+      scanAnimationFrameId: null,
+      facingMode: 'environment', // use back camera on phones by default
+      lastScannedCode: null,
     }
   },
   methods: {
@@ -368,22 +387,128 @@ export default {
     },
     
     async startScanner() {
+      // Start video camera using getUserMedia (works on mobile and desktop)
+      if (this.scannerActive) return;
       this.scannerActive = true;
       this.cameraReady = false;
-      
-      // Simulate camera initialization
-      setTimeout(() => {
-        this.cameraReady = true;
-      }, 1500);
-      
-      // Here you would integrate with a real QR scanner library
-      // For now, we'll simulate it
+      this.lastScannedCode = null;
+
+      try {
+        const constraints = {
+          video: {
+            facingMode: { ideal: this.facingMode },
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        this.scanStream = stream;
+
+        const video = this.$refs.video;
+        if (video) {
+          video.srcObject = stream;
+          video.playsInline = true; // important for iOS
+          video.muted = true; // allow autoplay in some browsers
+          await video.play();
+          this.cameraReady = true;
+        }
+
+        // start scanning loop
+        this.scanning = true;
+        this.scanFrame();
+      } catch (err) {
+        console.error('Camera start error:', err);
+        // fallback: still mark as active but without camera
+        this.scannerActive = false;
+        this.cameraReady = false;
+        alert('Unable to access camera. Please allow camera permissions or try a different device.');
+      }
     },
-    
+
     stopScanner() {
       this.scannerActive = false;
       this.cameraReady = false;
       this.scanning = false;
+
+      // stop camera stream tracks
+      if (this.scanStream) {
+        try {
+          this.scanStream.getTracks().forEach(t => t.stop());
+        } catch (e) { /* ignore */ }
+        this.scanStream = null;
+      }
+
+      // cancel animation frame
+      if (this.scanAnimationFrameId) {
+        cancelAnimationFrame(this.scanAnimationFrameId);
+        this.scanAnimationFrameId = null;
+      }
+
+      // clear video srcObject
+      const video = this.$refs.video;
+      if (video) {
+        try { video.pause(); } catch (e) {}
+        try { video.srcObject = null; } catch (e) {}
+      }
+    },
+
+    // Toggle between front/back cameras (useful on phones)
+    async toggleFacing() {
+      this.facingMode = this.facingMode === 'environment' ? 'user' : 'environment';
+      if (this.scannerActive) {
+        this.stopScanner();
+        // small delay to ensure tracks stop before restarting
+        setTimeout(() => this.startScanner(), 300);
+      }
+    },
+
+    // scanning loop using jsQR
+    async scanFrame() {
+      if (!this.scanning || !this.scannerActive) return;
+
+      const video = this.$refs.video;
+      if (!video || video.readyState !== HTMLMediaElement.HAVE_ENOUGH_DATA) {
+        this.scanAnimationFrameId = requestAnimationFrame(this.scanFrame);
+        return;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 640;
+      canvas.height = video.videoHeight || 480;
+      const ctx = canvas.getContext('2d');
+      try {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      } catch (e) {
+        this.scanAnimationFrameId = requestAnimationFrame(this.scanFrame);
+        return;
+      }
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: 'dontInvert' });
+
+      if (code && code.data) {
+        // avoid processing the same code repeatedly
+        if (this.lastScannedCode !== code.data) {
+          this.lastScannedCode = code.data;
+          // send code to server endpoint to resolve book
+          try {
+            const res = await fetch(`/guard/scan/${encodeURIComponent(code.data)}`, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': this.$page.props.csrf_token || document.querySelector('meta[name="csrf-token"]')?.getAttribute('content')
+              }
+            });
+            const result = await res.json();
+            this.handleScanResult(result);
+          } catch (err) {
+            console.error('Error fetching scan result:', err);
+          }
+        }
+      }
+
+      this.scanAnimationFrameId = requestAnimationFrame(this.scanFrame);
     },
     
     async scanManualBookId() {

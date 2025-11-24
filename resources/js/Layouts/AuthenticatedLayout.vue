@@ -12,9 +12,9 @@ const showingNavigationDropdown = ref(false);
 
 <template>
     <div>
-        <div class="min-h-screen bg-gray-100">
+        <div class="min-h-screen bg-gradient-to-br from-cream-50 via-sunshine-50 to-citrus-50">
             <nav
-                class="border-b border-gray-100 bg-white"
+                class="border-b border-sunshine-200 bg-gradient-to-r from-white to-cream-100 shadow-lg"
             >
                 <!-- Primary Navigation Menu -->
                 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

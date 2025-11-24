@@ -1,6 +1,6 @@
 <template>
   <Link href="/" class="absolute top-3 sm:top-5 left-3 sm:left-5 z-50 transition-transform hover:scale-105">
-    <img src="/img/logo2.png" alt="BOOK CLOUD Logo" class="w-[150px] sm:w-[180px] md:w-[220px] h-auto drop-shadow-2xl">
+    <img src="/img/snsu.png" alt="BOOK CLOUD Logo" class="w-[150px] sm:w-[180px] md:w-[220px] h-auto drop-shadow-2xl">
   </Link>
   
   <div class="flex items-center justify-center min-h-screen bg-cover bg-center relative px-4 py-20 sm:py-24 overflow-hidden" style="background-image: url('/img/sign.jpg');">

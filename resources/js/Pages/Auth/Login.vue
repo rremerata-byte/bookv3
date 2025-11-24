@@ -1,7 +1,7 @@
 <template>
   <!-- Responsive centered logo with subtle animation -->
   <Link href="/" class="absolute top-3 sm:top-5 left-1/2 transform -translate-x-1/2 md:left-5 md:transform-none z-50 transition-transform hover:scale-105">
-    <img src="/img/logo2.png" alt="BOOK CLOUD Logo" class="w-[150px] sm:w-[180px] md:w-[220px] h-auto drop-shadow-2xl">
+    <img src="/img/snsu.png" alt="BOOK CLOUD Logo" class="w-[150px] sm:w-[180px] md:w-[220px] h-auto drop-shadow-2xl">
   </Link>
 
   <!-- Full-bleed background with enhanced overlay and animated gradient -->

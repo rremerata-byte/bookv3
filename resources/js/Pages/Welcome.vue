@@ -428,7 +428,7 @@
     justify-content: center;
     gap: 12px;
     padding: 18px 36px;
-    background: linear-gradient(135deg, #10b981 0%, #059669 50%, #047857 100%);
+    background: linear-gradient(135deg, #facc15 0%, #f97316 50%, #ea580c 100%);
     color: white;
     border: none;
     border-radius: 50px;
@@ -439,7 +439,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 
-      0 8px 25px rgba(16, 185, 129, 0.4),
+      0 8px 25px rgba(234, 179, 8, 0.4),
       0 4px 12px rgba(0, 0, 0, 0.15),
       inset 0 1px 0 rgba(255, 255, 255, 0.2);
     overflow: hidden;
@@ -454,7 +454,7 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 50%, #15803d 100%);
     opacity: 0;
     transition: opacity 0.3s ease;
     border-radius: 50px;
@@ -468,7 +468,7 @@
   .get-started-btn:hover {
     transform: translateY(-2px) scale(1.05);
     box-shadow: 
-      0 12px 35px rgba(16, 185, 129, 0.5),
+      0 12px 35px rgba(34, 197, 94, 0.5),
       0 6px 20px rgba(0, 0, 0, 0.2),
       inset 0 1px 0 rgba(255, 255, 255, 0.3);
   }
@@ -476,7 +476,7 @@
   .get-started-btn:active {
     transform: translateY(-1px) scale(1.02);
     box-shadow: 
-      0 6px 20px rgba(16, 185, 129, 0.4),
+      0 6px 20px rgba(34, 197, 94, 0.4),
       0 3px 10px rgba(0, 0, 0, 0.15);
   }
   

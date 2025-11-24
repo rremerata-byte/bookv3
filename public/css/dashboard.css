@@ -22,7 +22,8 @@ body {
     position: fixed;
     height: 100%;
     width: 260px;
-    background: #081c2d;
+    background: linear-gradient(180deg, #16a34a 0%, #15803d 50%, #14532d 100%);
+    box-shadow: 4px 0 20px rgba(22, 163, 74, 0.3);
     padding: 15px;
     z-index: 99;
 }
@@ -54,11 +55,15 @@ body {
     border-radius: 12px;
     font-weight: normal;
     text-align: left; /* Ensure text is aligned left */
+    transition: all 0.3s ease;
 }
 
 .item a:hover {
-    background-color: #00509e;
+    background: linear-gradient(135deg, #facc15, #f97316);
+    color: white;
     font-weight: bold;
+    transform: translateX(8px);
+    box-shadow: 0 4px 15px rgba(249, 115, 22, 0.4);
 }
 
 /* Main content */
@@ -150,11 +155,14 @@ h1 {
 }
 
 .top-receipts th {
-    background-color: #f8f8f8;
+    background: linear-gradient(135deg, #fef9c3, #fde047);
+    color: #713f12;
+    font-weight: bold;
 }
 
 .top-receipts tr:hover td {
-    background-color: #f2f2f2;
+    background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+    color: #14532d;
 }
 
 /* Logo */

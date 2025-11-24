@@ -23,8 +23,10 @@ header .navbar {
   max-width: 100%;
   margin: 0 auto;
   padding: 1px 20px;
-  background-color: rgba(232, 140, 11, 0.7);
-  opacity: 70;
+  background: linear-gradient(135deg, #f97316 0%, #ea580c 50%, #c2410c 100%);
+  box-shadow: 0 4px 20px rgba(249, 115, 22, 0.3);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .navbar .logo {
@@ -43,25 +45,29 @@ header .navbar {
   gap: 35px;
 }
 .navbar .menu-links li a {
-  background-color: #f0ffd0; 
-  color: rgb(0, 0, 0); 
-  padding: 10px 20px; 
-  border-radius: 5px;
-  border-color: #000000;
-  text-decoration: none; 
-  transition: background-color 0.3s ease; 
-  border: 0.5px solid;
-  border-color: #363636;
+  background: linear-gradient(135deg, #fef9c3, #fde047);
+  color: rgb(92, 78, 0);
+  padding: 12px 24px;
+  border-radius: 12px;
+  border-color: #ca8a04;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 2px solid #ca8a04;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(234, 179, 8, 0.3);
 }
 
 .navbar .menu-links li a:hover {
-  background-color: #99dfa2;
-  border-color: #000000;
+  background: linear-gradient(135deg, #86efac, #34d399);
+  border-color: #16a34a;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(52, 211, 153, 0.4);
 }
 
 .navbar .menu-links li a:active {
-  background-color: #99dfa2;
-  border-color: #000000;
+  background: linear-gradient(135deg, #86efac, #34d399);
+  border-color: #16a34a;
+  transform: translateY(0);
 }
 
 .navbar .menu-links {
@@ -273,41 +279,47 @@ header .navbar {
 }
 
 .boxed-content {
-  background-color: rgba(1, 23, 63, 0.5); 
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(30, 41, 59, 0.8));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   padding: clamp(20px, 5vw, 80px);
-  margin: 0 auto; 
+  margin: 0 auto;
   text-align: center;
   color: white;
-  border-radius: 10px;
+  border-radius: 20px;
   max-width: 90%;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
 }
 
 a.get-started-btn {
   display: inline-block;
-  background-color: #DBF1DB;
-  color: black;
-  border: 1px solid;
-  border-color: #363636;
-  padding: 12px 24px;
+  background: linear-gradient(135deg, #fef9c3, #fde047);
+  color: #713f12;
+  border: 2px solid #ca8a04;
+  padding: 15px 30px;
   font-size: clamp(0.9rem, 2vw, 1rem);
-  font-weight: 500;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-  margin-top: 20px; 
+  font-weight: 600;
   text-decoration: none;
+  border-radius: 15px;
+  transition: all 0.4s ease;
+  box-shadow: 0 4px 15px rgba(234, 179, 8, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 a.get-started-btn:hover {
-  background-color: #e68a00;
-  border-color: #000;
-  transform: translateY(-2px);
+  background: linear-gradient(135deg, #34d399, #16a34a);
+  color: white;
+  border-color: #16a34a;
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(52, 211, 153, 0.5);
 }
 
 a.get-started-btn:active {
-  background-color: #cc7a00;
-  border-color: #000;
-  transform: translateY(0);
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white;
+  border-color: #15803d;
+  transform: translateY(0) scale(1.02);
 }
 
 /* Desktop styles (1200px and above) */
